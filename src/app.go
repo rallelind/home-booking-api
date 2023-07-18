@@ -1,11 +1,12 @@
 package app
 
 import (
+	"database/sql"
+	_ "github.com/lib/pq"
+	"github.com/lpernett/godotenv"
 	"log"
 	"net/http"
-	"database/sql"
 	"os"
-	"github.com/lpernett/godotenv"
 )
 
 func App() {
@@ -13,7 +14,7 @@ func App() {
 	err := godotenv.Load()
 
 	if err != nil {
-	  log.Fatal("Error loading .env file")
+		log.Fatal("Error loading .env file")
 	}
 
 	connectionString := os.Getenv("POSTGRES_CONNECTION_STRING")
