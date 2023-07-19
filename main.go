@@ -1,6 +1,7 @@
 package main
 
-import "home-booking-api/src"
+import app "home-booking-api/src"
+
 
 func main() {
 	app.App()
