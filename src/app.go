@@ -7,7 +7,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"home-booking-api/src/db"
 )
 
 func App() {
@@ -25,8 +24,6 @@ func App() {
 	if err != nil {
 		log.Fatal("Error connecting to database")
 	}
-
-	tables.SetupDatabase(db)
 
 	defer db.Close()
 
