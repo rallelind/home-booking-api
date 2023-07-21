@@ -1,7 +1,7 @@
 package app
 
 import (
-	"home-booking-api/src/controllers"
+	"home-booking-api/src/routes"
 	"log"
 	"net/http"
 	"os"
@@ -31,7 +31,8 @@ func App() {
 	defer db.Close()
 
 	mux := mux.NewRouter()
-	mux.Handle("/house", controllers.CreateHouse(db)).Methods("POST")
+
+	routes.RegisterHouseRoutes(mux, db)
 
 	http.ListenAndServe(":8080", mux)
 
