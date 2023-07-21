@@ -11,6 +11,7 @@ import (
 )
 
 type HousePayload struct {
+	Id                  string         `db:"id" json:"id"`
 	Address             string         `db:"address" json:"address"`
 	HouseName           string         `db:"house_name" json:"house_name"`
 	AdminNeedsToApprove bool           `db:"admin_needs_to_approve" json:"admin_needs_to_approve"`
@@ -49,6 +50,8 @@ func CreateHouse(db *sqlx.DB) http.HandlerFunc {
 
 func UpdateHouse(db *sqlx.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+
 		var updateHousePayload HousePayload
 
 		vars := mux.Vars(r)
@@ -80,5 +83,37 @@ func UpdateHouse(db *sqlx.DB) http.HandlerFunc {
 
 		w.WriteHeader(http.StatusCreated)
 		json.NewEncoder(w).Encode("created")
-	}	
+	}
+}
+
+func GetHouse(db *sqlx.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+
+		// add middleware to check if the requesting user is part of the house
+
+		vars := mux.Vars(r)
+		houseId, ok := vars["houseId"]
+
+		if !ok {
+			http.Error(w, "missing path param houseId", http.StatusBadRequest)
+			return
+		}
+
+		sqlFindHouse := `
+			SELECT * FROM houses WHERE id = $1
+		`
+
+		var house HousePayload
+
+		err := db.QueryRowx(sqlFindHouse, houseId).StructScan(&house)
+
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		json.NewEncoder(w).Encode(house)
+
+	}
 }
