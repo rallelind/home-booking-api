@@ -11,7 +11,7 @@ import (
 )
 
 type HousePayload struct {
-	Id                  string         `db:"id" json:"id"`
+	Id                  int         `db:"id" json:"id"`
 	Address             string         `db:"address" json:"address"`
 	HouseName           string         `db:"house_name" json:"house_name"`
 	AdminNeedsToApprove bool           `db:"admin_needs_to_approve" json:"admin_needs_to_approve"`
@@ -44,7 +44,7 @@ func CreateHouse(db *sqlx.DB) http.HandlerFunc {
 			return
 		}
 		w.WriteHeader(http.StatusCreated)
-		json.NewEncoder(w).Encode(createHousePayload)
+		json.NewEncoder(w).Encode("successfully created")
 	}
 }
 
@@ -112,8 +112,32 @@ func GetHouse(db *sqlx.DB) http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-
 		json.NewEncoder(w).Encode(house)
 
+	}
+}
+
+func RemoveHouse(db *sqlx.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		houseId, ok := vars["houseId"]
+
+		if !ok {
+			http.Error(w, "missing path param houseId", http.StatusBadRequest)
+			return
+		}
+
+		sqlRemoveHouse := `
+			DELETE FROM houses WHERE id = $1
+		`
+
+		_, err := db.Exec(sqlRemoveHouse, houseId)
+
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		json.NewEncoder(w).Encode("removed")
 	}
 }

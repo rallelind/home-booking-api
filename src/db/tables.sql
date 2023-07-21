@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS houses(
 	house_name TEXT,
 	admin_needs_to_approve BOOLEAN,
 	login_images TEXT[]
+	house_admins TEXT[]
 )
 	
 
