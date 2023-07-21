@@ -1,12 +1,15 @@
 package app
 
 import (
-	"database/sql"
-	_ "github.com/lib/pq"
-	"github.com/lpernett/godotenv"
+	"home-booking-api/src/controllers"
 	"log"
 	"net/http"
 	"os"
+
+	"github.com/gorilla/mux"
+	"github.com/jmoiron/sqlx"
+	_ "github.com/lib/pq"
+	"github.com/lpernett/godotenv"
 )
 
 func App() {
@@ -19,7 +22,7 @@ func App() {
 
 	connectionString := os.Getenv("POSTGRES_CONNECTION_STRING")
 
-	db, err := sql.Open("postgres", connectionString)
+	db, err := sqlx.Connect("postgres", connectionString)
 
 	if err != nil {
 		log.Fatal("Error connecting to database")
@@ -27,7 +30,8 @@ func App() {
 
 	defer db.Close()
 
-	mux := http.NewServeMux()
+	mux := mux.NewRouter()
+	mux.Handle("/house", controllers.CreateHouse(db)).Methods("POST")
 
 	http.ListenAndServe(":8080", mux)
 
