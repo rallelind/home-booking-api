@@ -33,6 +33,7 @@ func App() {
 	mux := mux.NewRouter()
 
 	routes.RegisterHouseRoutes(mux, db)
+	routes.RegisterFamilyRoutes(mux, db)
 
 	http.ListenAndServe(":8080", mux)
 
