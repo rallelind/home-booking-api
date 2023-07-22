@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/gorilla/mux"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -75,5 +76,48 @@ func CreateBooking(db *sqlx.DB) http.HandlerFunc {
 		}
 
 		json.NewEncoder(w).Encode("successfully created")
+	}
+}
+
+type BookingApprovalPayload struct {
+	Approved bool `db:"approved" json:"approved"`
+}
+
+func ApproveBooking(db *sqlx.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+
+		vars := mux.Vars(r)
+
+		bookingId, ok := vars["bookingId"]
+
+		if !ok {
+			http.Error(w, "please provide booking id", http.StatusBadRequest)
+			return
+		}
+
+		var bookingApprovalPayload BookingApprovalPayload
+
+		err := json.NewDecoder(r.Body).Decode(&bookingApprovalPayload)
+
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		sqlChangeBooking := `
+			UPDATE bookings SET approved = $1
+			WHERE id = $2
+		`
+
+		_, err = db.Exec(sqlChangeBooking, bookingApprovalPayload.Approved, bookingId)
+
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		json.NewEncoder(w).Encode("updated")
+
 	}
 }
