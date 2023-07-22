@@ -2,18 +2,19 @@ package controllers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/jmoiron/sqlx"
-	"github.com/lib/pq"
 )
 
 type BookingPayload struct {
-	Id        int         `db:"id" json:"id"`
-	StartDate pq.NullTime `db:"start_date" json:"start_date"`
-	EndDate   pq.NullTime `db:"end_date" json:"end_date"`
-	Approved  bool        `db:"approved" json:"approved"`
-	HouseId   int         `db:"house_id" json:"house_id"`
+	Id        int       `db:"id" json:"id"`
+	StartDate time.Time `db:"start_date" json:"start_date"`
+	EndDate   time.Time `db:"end_date" json:"end_date"`
+	Approved  bool      `db:"approved" json:"approved"`
+	HouseId   int       `db:"house_id" json:"house_id"`
 }
 
 func CreateBooking(db *sqlx.DB) http.HandlerFunc {
@@ -36,11 +37,10 @@ func CreateBooking(db *sqlx.DB) http.HandlerFunc {
 
 		sqlQueryExistingBookings := `
 			SELECT COUNT(*) FROM bookings
-			WHERE
-				(start_date, end_date) OVERLAPS ($1, $2)
+			WHERE (start_date, end_date) OVERLAPS ($1, $2)
 		`
 
-		err = db.QueryRow(sqlQueryExistingBookings, createBookingPayload.StartDate, createBookingPayload.EndDate).Scan(&count)
+		err = db.QueryRow(sqlQueryExistingBookings, &createBookingPayload.StartDate, &createBookingPayload.EndDate).Scan(&count)
 
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -54,7 +54,7 @@ func CreateBooking(db *sqlx.DB) http.HandlerFunc {
 
 		sqlInsertBooking := `
 			INSERT INTO bookings (start_date, end_date, approved, house_id)
-			VALUES (:start_date, end_date,
+			VALUES (:start_date, :end_date,
 				CASE
 					WHEN (SELECT admin_needs_to_approve FROM houses WHERE id = :house_id) = TRUE THEN FALSE
 					ELSE TRUE
