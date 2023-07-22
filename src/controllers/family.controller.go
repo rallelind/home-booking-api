@@ -131,6 +131,7 @@ func RemoveFamily(db *sqlx.DB) http.HandlerFunc {
 
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
 
 		json.NewEncoder(w).Encode("successfully deleted")

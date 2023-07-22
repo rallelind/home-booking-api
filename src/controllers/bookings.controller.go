@@ -79,6 +79,32 @@ func CreateBooking(db *sqlx.DB) http.HandlerFunc {
 	}
 }
 
+func RemoveBooking(db *sqlx.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+
+		bookingId, ok := vars["bookingId"]
+
+		if !ok {
+			http.Error(w, "no booking id provided", http.StatusBadRequest)
+			return
+		}
+
+		sqlDeleteBooking := `
+			DELETE FROM bookings WHERE id = $1
+		`
+
+		_, err := db.Exec(sqlDeleteBooking, bookingId)
+
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		json.NewEncoder(w).Encode("successfully deleted")
+	}
+}
+
 type BookingApprovalPayload struct {
 	Approved bool `db:"approved" json:"approved"`
 }
