@@ -34,6 +34,7 @@ func App() {
 
 	routes.RegisterHouseRoutes(mux, db)
 	routes.RegisterFamilyRoutes(mux, db)
+	routes.RegisterBookingsRoutes(mux, db)
 
 	http.ListenAndServe(":8080", mux)
 
