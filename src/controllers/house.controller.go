@@ -11,7 +11,7 @@ import (
 )
 
 type HousePayload struct {
-	Id                  int         `db:"id" json:"id"`
+	Id                  int            `db:"id" json:"id"`
 	Address             string         `db:"address" json:"address"`
 	HouseName           string         `db:"house_name" json:"house_name"`
 	AdminNeedsToApprove bool           `db:"admin_needs_to_approve" json:"admin_needs_to_approve"`
@@ -81,8 +81,7 @@ func UpdateHouse(db *sqlx.DB) http.HandlerFunc {
 			return
 		}
 
-		w.WriteHeader(http.StatusCreated)
-		json.NewEncoder(w).Encode("created")
+		json.NewEncoder(w).Encode("updated")
 	}
 }
 
@@ -119,6 +118,8 @@ func GetHouse(db *sqlx.DB) http.HandlerFunc {
 
 func RemoveHouse(db *sqlx.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+
 		vars := mux.Vars(r)
 		houseId, ok := vars["houseId"]
 
@@ -138,6 +139,6 @@ func RemoveHouse(db *sqlx.DB) http.HandlerFunc {
 			return
 		}
 
-		json.NewEncoder(w).Encode("removed")
+		json.NewEncoder(w).Encode("successfully deleted")
 	}
 }
