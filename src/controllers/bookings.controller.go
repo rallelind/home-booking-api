@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"time"
 
@@ -30,6 +29,11 @@ func CreateBooking(db *sqlx.DB) http.HandlerFunc {
 
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		if createBookingPayload.EndDate == createBookingPayload.StartDate {
+			http.Error(w, "dates can't be the same", http.StatusBadRequest)
 			return
 		}
 
