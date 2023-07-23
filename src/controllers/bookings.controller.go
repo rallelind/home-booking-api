@@ -42,7 +42,8 @@ func CreateBooking(db *sqlx.DB) http.HandlerFunc {
 
 		sqlQueryExistingBookings := `
 			SELECT COUNT(*) FROM bookings
-			WHERE (start_date, end_date) OVERLAPS ($1, $2)
+			WHERE (start_date, end_date) OVERLAPS ($1, $2) 
+			AND approved = true
 		`
 
 		err = db.QueryRow(sqlQueryExistingBookings, &createBookingPayload.StartDate, &createBookingPayload.EndDate).Scan(&count)
@@ -134,24 +135,31 @@ func ApproveBooking(db *sqlx.DB) http.HandlerFunc {
 		sqlChangeBooking := `
 			UPDATE bookings SET approved = $1
 			WHERE id = $2
-			RETURNING start_date, end_date
+			RETURNING start_date, end_date, approved, id
 		`
 
 		var updatedStartDate time.Time
 		var updatedEndDate time.Time
+		var updatedApproved bool
+		var updatedId int
 
-		err = db.QueryRow(sqlChangeBooking, bookingApprovalPayload.Approved, bookingId).Scan(&updatedStartDate, &updatedEndDate)
-		
+		err = db.QueryRow(sqlChangeBooking, bookingApprovalPayload.Approved, bookingId).Scan(&updatedStartDate, &updatedEndDate, &updatedApproved, &updatedId)
+
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
+		if !updatedApproved {
+			json.NewEncoder(w).Encode("updated")
+			return
+		}
+
 		sqlRemoveBookings := `
-			DELETE FROM bookings WHERE (start_date, end_date) OVERLAPS ($1, $2)
+			DELETE FROM bookings WHERE (start_date, end_date) OVERLAPS ($1, $2) AND id <> $3
 		`
 
-		_, err = db.Exec(sqlRemoveBookings, updatedStartDate, updatedEndDate)
+		_, err = db.Exec(sqlRemoveBookings, updatedStartDate, updatedEndDate, updatedId)
 
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
