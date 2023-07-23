@@ -16,6 +16,7 @@ type HousePayload struct {
 	HouseName           string         `db:"house_name" json:"house_name"`
 	AdminNeedsToApprove bool           `db:"admin_needs_to_approve" json:"admin_needs_to_approve"`
 	LoginImages         pq.StringArray `db:"login_images" json:"login_images"`
+	HouseAdming         []string       `db:"house_admins" json:"house_admins"`
 }
 
 func CreateHouse(db *sqlx.DB) http.HandlerFunc {

@@ -30,7 +30,7 @@ func CreateFamily(db *sqlx.DB) http.HandlerFunc {
 
 		insertFamily := `
 			INSERT INTO families (family_name, members)
-			VALUES  (:family_name, :members)
+			VALUES (:family_name, :members)
 		`
 
 		_, err = db.NamedExec(insertFamily, createFamilyPayload)
