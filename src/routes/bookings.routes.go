@@ -10,4 +10,5 @@ import (
 func RegisterBookingsRoutes(r *mux.Router, db *sqlx.DB) {
 	r.Handle("/bookings", controllers.CreateBooking(db)).Methods("POST")
 	r.Handle("/bookings/{bookingId}", controllers.ApproveBooking(db)).Methods("PUT")
+	r.Handle("/bookings/{bookingId}", controllers.RemoveBooking(db)).Methods("DELETE")
 }

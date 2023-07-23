@@ -134,9 +134,24 @@ func ApproveBooking(db *sqlx.DB) http.HandlerFunc {
 		sqlChangeBooking := `
 			UPDATE bookings SET approved = $1
 			WHERE id = $2
+			RETURNING start_date, end_date
 		`
 
-		_, err = db.Exec(sqlChangeBooking, bookingApprovalPayload.Approved, bookingId)
+		var updatedStartDate time.Time
+		var updatedEndDate time.Time
+
+		err = db.QueryRow(sqlChangeBooking, bookingApprovalPayload.Approved, bookingId).Scan(&updatedStartDate, &updatedEndDate)
+		
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		sqlRemoveBookings := `
+			DELETE FROM bookings WHERE (start_date, end_date) OVERLAPS ($1, $2)
+		`
+
+		_, err = db.Exec(sqlRemoveBookings, updatedStartDate, updatedEndDate)
 
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
