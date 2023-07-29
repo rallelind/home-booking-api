@@ -16,7 +16,7 @@ type HousePayload struct {
 	HouseName           string         `db:"house_name" json:"house_name"`
 	AdminNeedsToApprove bool           `db:"admin_needs_to_approve" json:"admin_needs_to_approve"`
 	LoginImages         pq.StringArray `db:"login_images" json:"login_images"`
-	HouseAdming         []string       `db:"house_admins" json:"house_admins"`
+	HouseAdmins         pq.StringArray `db:"house_admins" json:"house_admins"`
 }
 
 func CreateHouse(db *sqlx.DB) http.HandlerFunc {
@@ -51,7 +51,6 @@ func CreateHouse(db *sqlx.DB) http.HandlerFunc {
 
 func UpdateHouse(db *sqlx.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
 
 		var updateHousePayload HousePayload
 
@@ -81,7 +80,8 @@ func UpdateHouse(db *sqlx.DB) http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-
+		
+		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode("updated")
 	}
 }
@@ -109,7 +109,8 @@ func GetHouse(db *sqlx.DB) http.HandlerFunc {
 		err := db.QueryRowx(sqlFindHouse, houseId).StructScan(&house)
 
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			log.Print(err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 		json.NewEncoder(w).Encode(house)
