@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/clerkinc/clerk-sdk-go/clerk"
 	"github.com/gorilla/mux"
 	"github.com/jmoiron/sqlx"
 	"github.com/lib/pq"
@@ -33,8 +34,8 @@ func CreateHouse(db *sqlx.DB) http.HandlerFunc {
 		}
 
 		insertHouse := `
-			INSERT INTO houses (address, house_name, admin_needs_to_approve, login_images)
-			VALUES (:address, :house_name, :admin_needs_to_approve, :login_images)
+			INSERT INTO houses (address, house_name, admin_needs_to_approve, login_images, house_admins)
+			VALUES (:address, :house_name, :admin_needs_to_approve, :login_images, :house_admins)
 		`
 
 		_, err = db.NamedExec(insertHouse, createHousePayload)
@@ -46,6 +47,40 @@ func CreateHouse(db *sqlx.DB) http.HandlerFunc {
 		}
 		w.WriteHeader(http.StatusCreated)
 		json.NewEncoder(w).Encode("successfully created")
+	}
+}
+
+func GetUserHouses(db *sqlx.DB, clerkClient clerk.Client) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+
+		ctx := r.Context()
+		// ignore the ok because a user will be there as of require session middleware will return 403 else
+		sessionClaims, _ := ctx.Value(clerk.ActiveSessionClaims).(*clerk.SessionClaims)
+		user, err := clerkClient.Users().Read(sessionClaims.Claims.Subject)
+
+		if err != nil {
+			w.WriteHeader(http.StatusNotFound)
+			w.Write([]byte("Did not find user"))
+			return
+		}
+
+		var housePayload HousePayload
+
+		housesQuery := `
+
+		`
+
+		err = db.QueryRowx(housesQuery, user.EmailAddresses).StructScan(pq.Array(&housePayload))
+
+		if err != nil {
+			log.Print(err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		json.NewEncoder(w).Encode(housePayload)
+
 	}
 }
 
@@ -80,7 +115,7 @@ func UpdateHouse(db *sqlx.DB) http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		
+
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode("updated")
 	}
