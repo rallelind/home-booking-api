@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/clerkinc/clerk-sdk-go/clerk"
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
@@ -21,6 +23,15 @@ func App() {
 	}
 
 	connectionString := os.Getenv("POSTGRES_CONNECTION_STRING")
+	clerkSecret := os.Getenv("CLERK_SECRET_KEY")
+
+	clerkClient, err := clerk.NewClient(clerkSecret)
+
+	if err != nil {
+		log.Fatal("Error initiating clerk client")
+	}
+
+	injectActiveSession := clerk.RequireSessionV2(clerkClient)
 
 	db, err := sqlx.Connect("postgres", connectionString)
 
@@ -31,11 +42,12 @@ func App() {
 	defer db.Close()
 
 	mux := mux.NewRouter()
+	mux.Use(injectActiveSession)
 
 	routes.RegisterHouseRoutes(mux, db)
 	routes.RegisterFamilyRoutes(mux, db)
 	routes.RegisterBookingsRoutes(mux, db)
 
-	http.ListenAndServe(":8080", mux)
+	log.Fatal(http.ListenAndServe(":8080", handlers.CORS(handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"}), handlers.AllowedMethods([]string{"GET", "POST", "PUT", "HEAD", "OPTIONS"}), handlers.AllowedOrigins([]string{"*"}))(mux)))
 
 }
