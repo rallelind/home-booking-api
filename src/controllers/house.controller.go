@@ -20,7 +20,7 @@ type HousePayload struct {
 	HouseAdmins         pq.StringArray `db:"house_admins" json:"house_admins"`
 }
 
-func CreateHouse(db *sqlx.DB, clerkClient clerk.Client) http.HandlerFunc {
+func CreateHouse(db *sqlx.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 
