@@ -20,7 +20,7 @@ type HousePayload struct {
 	HouseAdmins         pq.StringArray `db:"house_admins" json:"house_admins"`
 }
 
-func CreateHouse(db *sqlx.DB) http.HandlerFunc {
+func CreateHouse(db *sqlx.DB, clerkClient clerk.Client) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 
@@ -55,15 +55,9 @@ func GetUserHouses(db *sqlx.DB, clerkClient clerk.Client) http.HandlerFunc {
 		w.Header().Set("Content-Type", "application/json")
 
 		ctx := r.Context()
-		// ignore the ok because a user will be there as of require session middleware will return 403 else
+		// ignore the ok and error because a user will be there as of require session middleware will return 403 else
 		sessionClaims, _ := ctx.Value(clerk.ActiveSessionClaims).(*clerk.SessionClaims)
-		user, err := clerkClient.Users().Read(sessionClaims.Claims.Subject)
-
-		if err != nil {
-			w.WriteHeader(http.StatusNotFound)
-			w.Write([]byte("Did not find user"))
-			return
-		}
+		user, _ := clerkClient.Users().Read(sessionClaims.Claims.Subject)
 
 		var housePayload HousePayload
 
@@ -71,7 +65,7 @@ func GetUserHouses(db *sqlx.DB, clerkClient clerk.Client) http.HandlerFunc {
 
 		`
 
-		err = db.QueryRowx(housesQuery, user.EmailAddresses).StructScan(pq.Array(&housePayload))
+		err := db.QueryRowx(housesQuery, user.EmailAddresses).StructScan(pq.Array(&housePayload))
 
 		if err != nil {
 			log.Print(err.Error())
