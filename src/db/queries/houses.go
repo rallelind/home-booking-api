@@ -19,6 +19,14 @@ const FindUserHousesQuery = `
 	WHERE $1 = ANY(f.members)
 `
 
+const UserHouseAdminQuery = `
+	SELECT EXISTS(SELECT * FROM houses WHERE $1 = ANY(house_admins))
+`
+
+const UserPartOfHouseQuery = `
+	SELECT EXISTS(SELECT * FROM houses h INNER JOIN families f ON h.id = f.house_id WHERE $1 = ANY(f.members))
+`
+
 const UpdateHouseQuery = `
 	UPDATE houses SET house_name = $1, admin_needs_to_approve = $2, login_images = $3
 	WHERE id = $4
