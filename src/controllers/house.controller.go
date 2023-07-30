@@ -55,17 +55,41 @@ func GetUserHouses(db *sqlx.DB, clerkClient clerk.Client) http.HandlerFunc {
 		w.Header().Set("Content-Type", "application/json")
 
 		ctx := r.Context()
+
 		// ignore the ok and error because a user will be there as of require session middleware will return 403 else
 		sessionClaims, _ := ctx.Value(clerk.ActiveSessionClaims).(*clerk.SessionClaims)
 		user, _ := clerkClient.Users().Read(sessionClaims.Claims.Subject)
 
-		var housePayload HousePayload
+		var allHouses []HousePayload
 
 		housesQuery := `
+			SELECT id, address, house_name, admin_needs_to_approve, login_images, house_admins
+			FROM houses
+			WHERE $1 = ANY(house_admins)
 
+			UNION
+
+			SELECT h.id, h.address, h.house_name, h.admin_needs_to_approve, h.login_images, h.house_admins
+			FROM houses h
+			INNER JOIN families f ON h.id = f.house_id
+			WHERE $1 = ANY(f.members)
 		`
 
-		err := db.QueryRowx(housesQuery, user.EmailAddresses).StructScan(pq.Array(&housePayload))
+		rows, err := db.Queryx(housesQuery, user.EmailAddresses[0].EmailAddress)
+
+		for rows.Next() {
+			var housePayload HousePayload
+			err := rows.StructScan(&housePayload)
+			if err != nil {
+				log.Print(err.Error())
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			allHouses = append(allHouses, housePayload)
+		}
+
+		defer rows.Close()
 
 		if err != nil {
 			log.Print(err.Error())
@@ -73,7 +97,12 @@ func GetUserHouses(db *sqlx.DB, clerkClient clerk.Client) http.HandlerFunc {
 			return
 		}
 
-		json.NewEncoder(w).Encode(housePayload)
+		if len(allHouses) == 0 {
+			http.Error(w, "No houses were found", http.StatusNotFound)
+			return
+		}
+
+		json.NewEncoder(w).Encode(allHouses)
 
 	}
 }

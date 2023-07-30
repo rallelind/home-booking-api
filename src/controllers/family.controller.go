@@ -13,6 +13,7 @@ type FamilyPayload struct {
 	Id         int            `db:"id" json:"id"`
 	FamilyName string         `db:"family_name" json:"family_name"`
 	Members    pq.StringArray `db:"members" json:"members"`
+	HouseId    int            `db:"house_id" json:"house_id"`
 }
 
 func CreateFamily(db *sqlx.DB) http.HandlerFunc {
@@ -29,8 +30,8 @@ func CreateFamily(db *sqlx.DB) http.HandlerFunc {
 		}
 
 		insertFamily := `
-			INSERT INTO families (family_name, members)
-			VALUES (:family_name, :members)
+			INSERT INTO families (family_name, members, house_id)
+			VALUES (:family_name, :members, :house_id)
 		`
 
 		_, err = db.NamedExec(insertFamily, createFamilyPayload)
