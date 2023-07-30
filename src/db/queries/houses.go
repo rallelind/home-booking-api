@@ -20,11 +20,11 @@ const FindUserHousesQuery = `
 `
 
 const UserHouseAdminQuery = `
-	SELECT EXISTS(SELECT * FROM houses WHERE $1 = ANY(house_admins))
+	SELECT * FROM houses WHERE $1 = ANY(house_admins)
 `
 
 const UserPartOfHouseQuery = `
-	SELECT EXISTS(SELECT * FROM houses h INNER JOIN families f ON h.id = f.house_id WHERE $1 = ANY(f.members))
+	SELECT * FROM houses h INNER JOIN families f ON h.id = f.house_id WHERE $1 = ANY(f.members)
 `
 
 const UpdateHouseQuery = `

@@ -3,29 +3,20 @@ package controllers
 import (
 	"encoding/json"
 	"home-booking-api/src/db/queries"
+	"home-booking-api/src/models"
 	"log"
 	"net/http"
 
 	"github.com/clerkinc/clerk-sdk-go/clerk"
 	"github.com/gorilla/mux"
 	"github.com/jmoiron/sqlx"
-	"github.com/lib/pq"
 )
-
-type HousePayload struct {
-	Id                  int            `db:"id" json:"id"`
-	Address             string         `db:"address" json:"address"`
-	HouseName           string         `db:"house_name" json:"house_name"`
-	AdminNeedsToApprove bool           `db:"admin_needs_to_approve" json:"admin_needs_to_approve"`
-	LoginImages         pq.StringArray `db:"login_images" json:"login_images"`
-	HouseAdmins         pq.StringArray `db:"house_admins" json:"house_admins"`
-}
 
 func CreateHouse(db *sqlx.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 
-		var createHousePayload HousePayload
+		var createHousePayload models.HouseModel
 
 		err := json.NewDecoder(r.Body).Decode(&createHousePayload)
 
@@ -56,12 +47,12 @@ func GetUserHouses(db *sqlx.DB, clerkClient clerk.Client) http.HandlerFunc {
 		sessionClaims, _ := ctx.Value(clerk.ActiveSessionClaims).(*clerk.SessionClaims)
 		user, _ := clerkClient.Users().Read(sessionClaims.Claims.Subject)
 
-		var allHouses []HousePayload
+		var allHouses []models.HouseModel
 
 		rows, err := db.Queryx(queries.FindUserHousesQuery, user.EmailAddresses[0].EmailAddress)
 
 		for rows.Next() {
-			var housePayload HousePayload
+			var housePayload models.HouseModel
 			err := rows.StructScan(&housePayload)
 			if err != nil {
 				log.Print(err.Error())
@@ -93,7 +84,7 @@ func GetUserHouses(db *sqlx.DB, clerkClient clerk.Client) http.HandlerFunc {
 func UpdateHouse(db *sqlx.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
-		var updateHousePayload HousePayload
+		var updateHousePayload models.HouseModel
 
 		vars := mux.Vars(r)
 		id, ok := vars["houseId"]
@@ -136,7 +127,7 @@ func GetHouse(db *sqlx.DB) http.HandlerFunc {
 			return
 		}
 
-		var house HousePayload
+		var house models.HouseModel
 
 		err := db.QueryRowx(queries.FindHouseQuery, houseId).StructScan(&house)
 

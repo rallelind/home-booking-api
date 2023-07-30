@@ -3,25 +3,18 @@ package controllers
 import (
 	"encoding/json"
 	"home-booking-api/src/db/queries"
+	"home-booking-api/src/models"
 	"net/http"
 
 	"github.com/gorilla/mux"
 	"github.com/jmoiron/sqlx"
-	"github.com/lib/pq"
 )
-
-type FamilyPayload struct {
-	Id         int            `db:"id" json:"id"`
-	FamilyName string         `db:"family_name" json:"family_name"`
-	Members    pq.StringArray `db:"members" json:"members"`
-	HouseId    int            `db:"house_id" json:"house_id"`
-}
 
 func CreateFamily(db *sqlx.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 
-		var createFamilyPayload FamilyPayload
+		var createFamilyPayload models.FamilyModel
 
 		err := json.NewDecoder(r.Body).Decode(&createFamilyPayload)
 
@@ -46,7 +39,7 @@ func UpdateFamily(db *sqlx.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 
-		var updateFamilyPayload FamilyPayload
+		var updateFamilyPayload models.FamilyModel
 
 		vars := mux.Vars(r)
 		familyId, ok := vars["familyId"]
@@ -85,7 +78,7 @@ func GetFamily(db *sqlx.DB) http.HandlerFunc {
 			return
 		}
 
-		var family FamilyPayload
+		var family models.FamilyModel
 
 		err := db.QueryRowx(queries.FindFamilyQuery, familyId).StructScan(&family)
 

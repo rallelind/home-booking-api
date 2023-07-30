@@ -45,7 +45,7 @@ func App() {
 	mux.Use(injectActiveSession)
 
 	routes.RegisterHouseRoutes(mux, db, clerkClient)
-	routes.RegisterFamilyRoutes(mux, db)
+	routes.RegisterFamilyRoutes(mux, db, clerkClient)
 	routes.RegisterBookingsRoutes(mux, db)
 
 	log.Fatal(http.ListenAndServe(":8080", 

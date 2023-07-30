@@ -3,20 +3,13 @@ package controllers
 import (
 	"encoding/json"
 	"home-booking-api/src/db/queries"
+	"home-booking-api/src/models"
 	"net/http"
 	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/jmoiron/sqlx"
 )
-
-type BookingPayload struct {
-	Id        int       `db:"id" json:"id"`
-	StartDate time.Time `db:"start_date" json:"start_date"`
-	EndDate   time.Time `db:"end_date" json:"end_date"`
-	Approved  bool      `db:"approved" json:"approved"`
-	HouseId   int       `db:"house_id" json:"house_id"`
-}
 
 func CreateBooking(db *sqlx.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -25,7 +18,7 @@ func CreateBooking(db *sqlx.DB) http.HandlerFunc {
 
 		w.Header().Set("Content-Type", "application/json")
 
-		var createBookingPayload BookingPayload
+		var createBookingPayload models.BookingModel
 
 		err := json.NewDecoder(r.Body).Decode(&createBookingPayload)
 
