@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
+	"home-booking-api/src/db/queries"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -29,12 +30,7 @@ func CreateFamily(db *sqlx.DB) http.HandlerFunc {
 			return
 		}
 
-		insertFamily := `
-			INSERT INTO families (family_name, members, house_id)
-			VALUES (:family_name, :members, :house_id)
-		`
-
-		_, err = db.NamedExec(insertFamily, createFamilyPayload)
+		_, err = db.NamedExec(queries.CreateFamilyQuery, createFamilyPayload)
 
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
@@ -66,13 +62,7 @@ func UpdateFamily(db *sqlx.DB) http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-
-		sqlUpdate := `
-			UPDATE families SET family_name = $1, members = $2
-			WHERE id = $3
-		`
-
-		_, err = db.Exec(sqlUpdate, updateFamilyPayload.FamilyName, updateFamilyPayload.Members, familyId)
+		_, err = db.Exec(queries.UpdateFamilyQuery, updateFamilyPayload.FamilyName, updateFamilyPayload.Members, familyId)
 
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -95,13 +85,9 @@ func GetFamily(db *sqlx.DB) http.HandlerFunc {
 			return
 		}
 
-		sqlFindFamily := `
-			SELECT * FROM families WHERE id = $1
-		`
-
 		var family FamilyPayload
 
-		err := db.QueryRowx(sqlFindFamily, familyId).StructScan(&family)
+		err := db.QueryRowx(queries.FindFamilyQuery, familyId).StructScan(&family)
 
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
@@ -124,11 +110,7 @@ func RemoveFamily(db *sqlx.DB) http.HandlerFunc {
 			return
 		}
 
-		sqlRemoveFamily := `
-			DELETE FROM families WHERE id = $1
-		`
-
-		_, err := db.Exec(sqlRemoveFamily, familyId)
+		_, err := db.Exec(queries.DeleteFamilyQuery, familyId)
 
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)

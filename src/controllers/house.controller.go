@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
+	"home-booking-api/src/db/queries"
 	"log"
 	"net/http"
 
@@ -33,12 +34,7 @@ func CreateHouse(db *sqlx.DB) http.HandlerFunc {
 			return
 		}
 
-		insertHouse := `
-			INSERT INTO houses (address, house_name, admin_needs_to_approve, login_images, house_admins)
-			VALUES (:address, :house_name, :admin_needs_to_approve, :login_images, :house_admins)
-		`
-
-		_, err = db.NamedExec(insertHouse, createHousePayload)
+		_, err = db.NamedExec(queries.CreateHouseQuery, createHousePayload)
 
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
@@ -62,20 +58,7 @@ func GetUserHouses(db *sqlx.DB, clerkClient clerk.Client) http.HandlerFunc {
 
 		var allHouses []HousePayload
 
-		housesQuery := `
-			SELECT id, address, house_name, admin_needs_to_approve, login_images, house_admins
-			FROM houses
-			WHERE $1 = ANY(house_admins)
-
-			UNION
-
-			SELECT h.id, h.address, h.house_name, h.admin_needs_to_approve, h.login_images, h.house_admins
-			FROM houses h
-			INNER JOIN families f ON h.id = f.house_id
-			WHERE $1 = ANY(f.members)
-		`
-
-		rows, err := db.Queryx(housesQuery, user.EmailAddresses[0].EmailAddress)
+		rows, err := db.Queryx(queries.FindUserHousesQuery, user.EmailAddresses[0].EmailAddress)
 
 		for rows.Next() {
 			var housePayload HousePayload
@@ -127,12 +110,7 @@ func UpdateHouse(db *sqlx.DB) http.HandlerFunc {
 			return
 		}
 
-		sqlUpdate := `
-			UPDATE houses SET house_name = $1, admin_needs_to_approve = $2, login_images = $3
-			WHERE id = $4
-		`
-
-		_, err = db.Exec(sqlUpdate, updateHousePayload.HouseName, updateHousePayload.AdminNeedsToApprove, updateHousePayload.LoginImages, id)
+		_, err = db.Exec(queries.UpdateHouseQuery, updateHousePayload.HouseName, updateHousePayload.AdminNeedsToApprove, updateHousePayload.LoginImages, id)
 
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
@@ -158,13 +136,9 @@ func GetHouse(db *sqlx.DB) http.HandlerFunc {
 			return
 		}
 
-		sqlFindHouse := `
-			SELECT * FROM houses WHERE id = $1
-		`
-
 		var house HousePayload
 
-		err := db.QueryRowx(sqlFindHouse, houseId).StructScan(&house)
+		err := db.QueryRowx(queries.FindHouseQuery, houseId).StructScan(&house)
 
 		if err != nil {
 			log.Print(err.Error())
@@ -188,11 +162,7 @@ func RemoveHouse(db *sqlx.DB) http.HandlerFunc {
 			return
 		}
 
-		sqlRemoveHouse := `
-			DELETE FROM houses WHERE id = $1
-		`
-
-		_, err := db.Exec(sqlRemoveHouse, houseId)
+		_, err := db.Exec(queries.RemoveHouseQuery, houseId)
 
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
