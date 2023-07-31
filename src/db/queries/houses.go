@@ -19,12 +19,13 @@ const FindUserHousesQuery = `
 	WHERE $1 = ANY(f.members)
 `
 
+
 const UserHouseAdminQuery = `
 	SELECT * FROM houses WHERE $1 = ANY(house_admins)
 `
 
 const UserPartOfHouseQuery = `
-	SELECT * FROM houses h INNER JOIN families f ON h.id = f.house_id WHERE $1 = ANY(f.members)
+	SELECT * FROM houses h INNER JOIN families f ON h.id = f.house_id WHERE $1 = ANY(f.members) AND $2 = f.house_id
 `
 
 const UpdateHouseQuery = `
