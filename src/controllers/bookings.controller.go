@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"database/sql"
 	"encoding/json"
 	"home-booking-api/src/db/queries"
 	"home-booking-api/src/models"
@@ -76,6 +77,48 @@ func RemoveBooking(db *sqlx.DB) http.HandlerFunc {
 		}
 
 		json.NewEncoder(w).Encode("successfully deleted")
+	}
+}
+
+func GetHouseBookings(db *sqlx.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+
+		bookingId, ok := vars["bookingId"]
+
+		if !ok {
+			http.Error(w, "no booking id provided", http.StatusBadRequest)
+			return
+		}
+
+		var allBookings []models.BookingModel
+
+		rows, err := db.Queryx(queries.GetBookingsForHouse, bookingId)
+
+		if err != nil {
+			if err == sql.ErrNoRows {
+				http.Error(w, "no bookings found", http.StatusNotFound)
+				return
+			}
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		for rows.Next() {
+			var bookingPayload models.BookingModel
+			err := rows.StructScan(&bookingPayload)
+
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+			}
+
+			allBookings = append(allBookings, bookingPayload)
+		}
+
+		defer rows.Close()
+
+		json.NewEncoder(w).Encode(allBookings)
+		
 	}
 }
 
