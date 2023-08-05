@@ -20,7 +20,8 @@ CREATE TABLE IF NOT EXISTS bookings(
 	id SERIAL PRIMARY KEY,
 	start_date DATE,
 	end_date DATE,
-	approved BOOLEAN
+	approved BOOLEAN,
+	user_booking TEXT
 )
 	
 

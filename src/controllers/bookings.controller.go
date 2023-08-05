@@ -8,18 +8,23 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/clerkinc/clerk-sdk-go/clerk"
 	"github.com/gorilla/mux"
 	"github.com/jmoiron/sqlx"
 )
 
-func CreateBooking(db *sqlx.DB) http.HandlerFunc {
+func CreateBooking(db *sqlx.DB, clerkClient clerk.Client) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-
-		// implement middleware to make sure the user is part of house
 
 		w.Header().Set("Content-Type", "application/json")
 
+		ctx := r.Context()
+
+		sessionClaims, _ := ctx.Value(clerk.ActiveSession).(*clerk.SessionClaims)
+		user, _ := clerkClient.Users().Read(sessionClaims.Claims.Subject)
+
 		var createBookingPayload models.BookingModel
+		createBookingPayload.UserBooking = user.EmailAddresses[0].EmailAddress
 
 		err := json.NewDecoder(r.Body).Decode(&createBookingPayload)
 
@@ -118,7 +123,7 @@ func GetHouseBookings(db *sqlx.DB) http.HandlerFunc {
 		defer rows.Close()
 
 		json.NewEncoder(w).Encode(allBookings)
-		
+
 	}
 }
 

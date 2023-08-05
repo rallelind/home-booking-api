@@ -2,7 +2,6 @@ package routes
 
 import (
 	"home-booking-api/src/controllers"
-	"home-booking-api/src/middleware"
 
 	"github.com/clerkinc/clerk-sdk-go/clerk"
 	"github.com/gorilla/mux"
@@ -10,8 +9,8 @@ import (
 )
 
 func RegisterBookingsRoutes(r *mux.Router, db *sqlx.DB, clerkClient clerk.Client) {
-	r.Use(middleware.UserPartOfHouse(db, clerkClient))
-	r.Handle("/bookings", controllers.CreateBooking(db)).Methods("POST")
+	//r.Use(middleware.UserPartOfHouse(db, clerkClient))
+	r.Handle("/bookings", controllers.CreateBooking(db, clerkClient)).Methods("POST")
 	r.Handle("/bookings/{houseId}", controllers.GetHouseBookings(db)).Methods("GET")
 	r.Handle("/bookings/{bookingId}", controllers.ApproveBooking(db)).Methods("PUT")
 	r.Handle("/bookings/{bookingId}", controllers.RemoveBooking(db)).Methods("DELETE")

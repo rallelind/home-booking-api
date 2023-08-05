@@ -14,7 +14,6 @@ import (
 
 func CreateHouse(db *sqlx.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
 
 		var createHousePayload models.HouseModel
 
