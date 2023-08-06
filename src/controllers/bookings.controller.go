@@ -89,7 +89,7 @@ func GetHouseBookings(db *sqlx.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 
-		bookingId, ok := vars["bookingId"]
+		houseId, ok := vars["houseId"]
 
 		if !ok {
 			http.Error(w, "no booking id provided", http.StatusBadRequest)
@@ -98,7 +98,7 @@ func GetHouseBookings(db *sqlx.DB) http.HandlerFunc {
 
 		var allBookings []models.BookingModel
 
-		rows, err := db.Queryx(queries.GetBookingsForHouse, bookingId)
+		rows, err := db.Queryx(queries.GetBookingsForHouse, houseId)
 
 		if err != nil {
 			if err == sql.ErrNoRows {
