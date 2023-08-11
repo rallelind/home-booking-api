@@ -24,9 +24,10 @@ func CreateBooking(db *sqlx.DB, clerkClient clerk.Client) http.HandlerFunc {
 		user, _ := clerkClient.Users().Read(sessionClaims.Claims.Subject)
 
 		var createBookingPayload models.BookingModel
+		
+		createBookingPayload.UserBooking = user.EmailAddresses[0].EmailAddress
 
 		err := json.NewDecoder(r.Body).Decode(&createBookingPayload)
-		createBookingPayload.UserBooking = user.EmailAddresses[0].EmailAddress
 
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)

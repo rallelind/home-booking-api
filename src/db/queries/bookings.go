@@ -7,13 +7,13 @@ const FindBookingForSpecificDateQuery = `
 `
 
 const CreateBookingQuery = `
-	INSERT INTO bookings (start_date, end_date, approved, house_id)
+	INSERT INTO bookings (start_date, end_date, approved, house_id, user_booking)
 	VALUES (:start_date, :end_date,
 		CASE
 			WHEN (SELECT admin_needs_to_approve FROM houses WHERE id = :house_id) = TRUE THEN FALSE
 			ELSE TRUE
 		END,
-	:house_id
+	:house_id, :user_booking
 	)
 `
 

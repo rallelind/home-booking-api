@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS houses(
 	address TEXT,
 	house_name TEXT,
 	admin_needs_to_approve BOOLEAN,
-	login_images TEXT[]
+	login_images TEXT[],
 	house_admins TEXT[]
 )
 	
