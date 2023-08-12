@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"home-booking-api/src/db/queries"
 	"home-booking-api/src/models"
+	"log"
 	"net/http"
 	"time"
 
@@ -24,8 +25,8 @@ func CreateBooking(db *sqlx.DB, clerkClient clerk.Client) http.HandlerFunc {
 		user, _ := clerkClient.Users().Read(sessionClaims.Claims.Subject)
 
 		var createBookingPayload models.BookingModel
-		
-		createBookingPayload.UserBooking = user.EmailAddresses[0].EmailAddress
+
+		createBookingPayload.UserBooking = user.ID
 
 		err := json.NewDecoder(r.Body).Decode(&createBookingPayload)
 
@@ -86,7 +87,12 @@ func RemoveBooking(db *sqlx.DB) http.HandlerFunc {
 	}
 }
 
-func GetHouseBookings(db *sqlx.DB) http.HandlerFunc {
+type Booking struct {
+	User    clerk.User `json:"user"`
+	Booking models.BookingModel `json:"booking"`
+}
+
+func GetHouseBookings(db *sqlx.DB, clerkClient clerk.Client) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 
@@ -97,7 +103,7 @@ func GetHouseBookings(db *sqlx.DB) http.HandlerFunc {
 			return
 		}
 
-		var allBookings []models.BookingModel
+		var allBookings []Booking
 
 		rows, err := db.Queryx(queries.GetBookingsForHouse, houseId)
 
@@ -111,12 +117,23 @@ func GetHouseBookings(db *sqlx.DB) http.HandlerFunc {
 		}
 
 		for rows.Next() {
-			var bookingPayload models.BookingModel
-			err := rows.StructScan(&bookingPayload)
+			var bookingPayload Booking
+			err := rows.StructScan(&bookingPayload.Booking)
 
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
 			}
+
+			user, err := clerkClient.Users().Read(bookingPayload.Booking.UserBooking)
+
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			bookingPayload.User = *user;
+			log.Print(bookingPayload)
 
 			allBookings = append(allBookings, bookingPayload)
 		}
