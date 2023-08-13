@@ -88,7 +88,7 @@ func RemoveBooking(db *sqlx.DB) http.HandlerFunc {
 }
 
 type Booking struct {
-	User    clerk.User `json:"user"`
+	User    clerk.User          `json:"user"`
 	Booking models.BookingModel `json:"booking"`
 }
 
@@ -132,7 +132,7 @@ func GetHouseBookings(db *sqlx.DB, clerkClient clerk.Client) http.HandlerFunc {
 				return
 			}
 
-			bookingPayload.User = *user;
+			bookingPayload.User = *user
 			log.Print(bookingPayload)
 
 			allBookings = append(allBookings, bookingPayload)
@@ -197,5 +197,42 @@ func ApproveBooking(db *sqlx.DB) http.HandlerFunc {
 
 		json.NewEncoder(w).Encode("updated")
 
+	}
+}
+
+func GetTodayBooking(db *sqlx.DB, clerkClient clerk.Client) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+
+		houseId, ok := mux.Vars(r)["houseId"]
+		var todaysDate = time.Now()
+
+		if !ok {
+			http.Error(w, "no house id provided", http.StatusBadRequest)
+			return
+		}
+
+		var booking Booking
+
+		err := db.QueryRowx(queries.GetBookingForCurrentDate, houseId, todaysDate).StructScan(&booking.Booking)
+
+		if err != nil {
+			if err == sql.ErrNoRows {
+				json.NewEncoder(w).Encode("no bookings found")
+				return
+			}
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		user, err := clerkClient.Users().Read(booking.Booking.UserBooking)
+
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		booking.User = *user
+
+		json.NewEncoder(w).Encode(booking)
 	}
 }

@@ -34,3 +34,7 @@ const DeleteOverlappingBookingsQuery = `
 const GetBookingsForHouse = `
 	SELECT * FROM bookings WHERE house_id = $1
 `
+
+const GetBookingForCurrentDate = `
+	SELECT * FROM bookings WHERE house_id = $1 AND start_date <= $2 AND end_date >= $2
+`
