@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"home-booking-api/src/db/queries"
 	"home-booking-api/src/models"
+	"home-booking-api/src/services"
 	"log"
 	"net/http"
 
@@ -160,5 +161,18 @@ func RemoveHouse(db *sqlx.DB) http.HandlerFunc {
 		}
 
 		json.NewEncoder(w).Encode("successfully deleted")
+	}
+}
+
+func UploadHouseImages(db *sqlx.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		resp, err := services.UploadImageToCloudinary(r)
+
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+ 
+		json.NewEncoder(w).Encode(resp)
 	}
 }

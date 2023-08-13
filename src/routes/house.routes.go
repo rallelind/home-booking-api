@@ -14,4 +14,5 @@ func RegisterHouseRoutes(r *mux.Router, db *sqlx.DB, clerkClient clerk.Client) {
 	r.Handle("/house/{houseId}", controllers.UpdateHouse(db)).Methods("PUT")
 	r.Handle("/house/{houseId}", controllers.GetHouse(db)).Methods("GET")
 	r.Handle("/house/{houseId}", controllers.RemoveHouse(db)).Methods("DELETE")
+	r.Handle("/upload", controllers.UploadHouseImages(db)).Methods("POST")
 }

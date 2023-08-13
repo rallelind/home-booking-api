@@ -9,6 +9,8 @@ require (
 	cloud.google.com/go/iam v1.1.0 // indirect
 	cloud.google.com/go/storage v1.31.0 // indirect
 	github.com/clerkinc/clerk-sdk-go v1.45.0 // indirect
+	github.com/cloudinary/cloudinary-go/v2 v2.4.0 // indirect
+	github.com/creasty/defaults v1.5.1 // indirect
 	github.com/felixge/httpsnoop v1.0.1 // indirect
 	github.com/go-jose/go-jose/v3 v3.0.0 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
@@ -20,6 +22,7 @@ require (
 	github.com/googleapis/gax-go/v2 v2.11.0 // indirect
 	github.com/gorilla/handlers v1.5.1 // indirect
 	github.com/gorilla/mux v1.8.0 // indirect
+	github.com/gorilla/schema v1.2.0 // indirect
 	github.com/jmoiron/sqlx v1.3.5 // indirect
 	github.com/lib/pq v1.10.9 // indirect
 	github.com/lpernett/godotenv v0.0.0-20230527005122-0de1d4c5ef5e // indirect
