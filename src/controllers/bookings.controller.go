@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"home-booking-api/src/db/queries"
 	"home-booking-api/src/models"
-	"log"
 	"net/http"
 	"time"
 
@@ -116,6 +115,8 @@ func GetHouseBookings(db *sqlx.DB, clerkClient clerk.Client) http.HandlerFunc {
 			return
 		}
 
+		var cachedUser clerk.User
+
 		for rows.Next() {
 			var bookingPayload Booking
 			err := rows.StructScan(&bookingPayload.Booking)
@@ -125,15 +126,18 @@ func GetHouseBookings(db *sqlx.DB, clerkClient clerk.Client) http.HandlerFunc {
 				return
 			}
 
-			user, err := clerkClient.Users().Read(bookingPayload.Booking.UserBooking)
+			if bookingPayload.Booking.UserBooking != cachedUser.ID {
+				user, err := clerkClient.Users().Read(bookingPayload.Booking.UserBooking)
 
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
+				if err != nil {
+					http.Error(w, err.Error(), http.StatusInternalServerError)
+					return
+				}
+
+				cachedUser = *user
 			}
 
-			bookingPayload.User = *user
-			log.Print(bookingPayload)
+			bookingPayload.User = cachedUser
 
 			allBookings = append(allBookings, bookingPayload)
 		}
