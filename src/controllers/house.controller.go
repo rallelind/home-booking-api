@@ -166,12 +166,21 @@ func RemoveHouse(db *sqlx.DB) http.HandlerFunc {
 
 func UploadHouseImages(db *sqlx.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		var houseId, ok = mux.Vars(r)["houseId"]
+
+		if !ok {
+			http.Error(w, "missing path param houseId", http.StatusBadRequest)
+			return
+		}
+
 		resp, err := services.UploadImageToCloudinary(r)
 
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
+
+		_, err = db.Exec(queries.AddHouseImages, resp.SecureURL, houseId)
  
 		json.NewEncoder(w).Encode(resp)
 	}

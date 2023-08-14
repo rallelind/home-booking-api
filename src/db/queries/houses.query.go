@@ -40,3 +40,7 @@ const FindHouseQuery = `
 const RemoveHouseQuery = `
 	DELETE FROM houses WHERE id = $1
 `
+
+const AddHouseImages = `
+	UPDATE houses SET login_images = $1 WHERE id = $2
+`
