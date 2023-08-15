@@ -41,8 +41,7 @@ func UpdateFamily(db *sqlx.DB) http.HandlerFunc {
 
 		var updateFamilyPayload models.FamilyModel
 
-		vars := mux.Vars(r)
-		familyId, ok := vars["familyId"]
+		familyId, ok := mux.Vars(r)["familyId"]
 
 		if !ok {
 			http.Error(w, "please provide a family id", http.StatusBadRequest)
@@ -70,8 +69,7 @@ func GetFamily(db *sqlx.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 
-		vars := mux.Vars(r)
-		familyId, ok := vars["familyId"]
+		familyId, ok := mux.Vars(r)["familyId"]
 
 		if !ok {
 			http.Error(w, "missing family id", http.StatusBadRequest)

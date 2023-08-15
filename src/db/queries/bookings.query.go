@@ -33,6 +33,7 @@ const DeleteOverlappingBookingsQuery = `
 
 const GetBookingsForHouse = `
 	SELECT * FROM bookings WHERE house_id = $1
+	ORDER BY start_date ASC
 `
 
 const GetBookingForCurrentDate = `

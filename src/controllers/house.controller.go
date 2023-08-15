@@ -86,8 +86,7 @@ func UpdateHouse(db *sqlx.DB) http.HandlerFunc {
 
 		var updateHousePayload models.HouseModel
 
-		vars := mux.Vars(r)
-		id, ok := vars["houseId"]
+		id, ok := mux.Vars(r)["houseId"]
 
 		if !ok {
 			http.Error(w, "please provide the house id", http.StatusBadRequest)
@@ -119,8 +118,7 @@ func GetHouse(db *sqlx.DB) http.HandlerFunc {
 
 		// add middleware to check if the requesting user is part of the house
 
-		vars := mux.Vars(r)
-		houseId, ok := vars["houseId"]
+		houseId, ok := mux.Vars(r)["houseId"]
 
 		if !ok {
 			http.Error(w, "missing path param houseId", http.StatusBadRequest)
@@ -145,8 +143,7 @@ func RemoveHouse(db *sqlx.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 
-		vars := mux.Vars(r)
-		houseId, ok := vars["houseId"]
+		houseId, ok := mux.Vars(r)["houseId"]
 
 		if !ok {
 			http.Error(w, "missing path param houseId", http.StatusBadRequest)
@@ -181,7 +178,7 @@ func UploadHouseImages(db *sqlx.DB) http.HandlerFunc {
 		}
 
 		_, err = db.Exec(queries.AddHouseImages, resp.SecureURL, houseId)
- 
+
 		json.NewEncoder(w).Encode(resp)
 	}
 }

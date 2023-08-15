@@ -66,9 +66,7 @@ func CreateBooking(db *sqlx.DB, clerkClient clerk.Client) http.HandlerFunc {
 
 func RemoveBooking(db *sqlx.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		vars := mux.Vars(r)
-
-		bookingId, ok := vars["bookingId"]
+		bookingId, ok := mux.Vars(r)["bookingId"]
 
 		if !ok {
 			http.Error(w, "no booking id provided", http.StatusBadRequest)
@@ -93,9 +91,7 @@ type Booking struct {
 
 func GetHouseBookings(db *sqlx.DB, clerkClient clerk.Client) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		vars := mux.Vars(r)
-
-		houseId, ok := vars["houseId"]
+		houseId, ok := mux.Vars(r)["houseId"]
 
 		if !ok {
 			http.Error(w, "no booking id provided", http.StatusBadRequest)
@@ -157,9 +153,7 @@ func ApproveBooking(db *sqlx.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 
-		vars := mux.Vars(r)
-
-		bookingId, ok := vars["bookingId"]
+		bookingId, ok := mux.Vars(r)["bookingId"]
 
 		if !ok {
 			http.Error(w, "please provide booking id", http.StatusBadRequest)
