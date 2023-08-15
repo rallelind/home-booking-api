@@ -89,6 +89,30 @@ func GetFamily(db *sqlx.DB) http.HandlerFunc {
 	}
 }
 
+func GetFamilies(db *sqlx.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+
+		houseId, ok := mux.Vars(r)["houseId"]
+
+		if !ok {
+			http.Error(w, "missing house id", http.StatusBadRequest)
+			return
+		}
+
+		var families []models.FamilyModel
+
+		err := db.Select(&families, queries.FindFamiliesQuery, houseId)
+
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		json.NewEncoder(w).Encode(families)
+	}
+}
+
 func RemoveFamily(db *sqlx.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")

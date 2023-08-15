@@ -14,4 +14,5 @@ func RegisterFamilyRoutes(r *mux.Router, db *sqlx.DB, clerkClient clerk.Client) 
 	r.Handle("/family/{familyId}", controllers.GetFamily(db)).Methods("GET")
 	r.Handle("/family/{familyId}", controllers.RemoveFamily(db)).Methods("DELETE")
 	r.Handle("/family/{familyId}", controllers.UpdateFamily(db)).Methods("PUT")
+	r.Handle("/families/{houseId}", controllers.GetFamilies(db)).Methods("GET")
 }

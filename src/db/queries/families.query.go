@@ -18,3 +18,7 @@ const FindFamilyQuery = `
 const DeleteFamilyQuery = `
 	DELETE FROM families WHERE id = $1
 `
+
+const FindFamiliesQuery = `
+	SELECT * FROM families WHERE house_id = $1
+`
