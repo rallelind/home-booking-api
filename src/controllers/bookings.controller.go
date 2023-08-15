@@ -111,6 +111,7 @@ func GetHouseBookings(db *sqlx.DB, clerkClient clerk.Client) http.HandlerFunc {
 			return
 		}
 
+		// TODO: still needs to be optimized to keep each found user in memory
 		var cachedUser clerk.User
 
 		for rows.Next() {

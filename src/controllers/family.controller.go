@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"database/sql"
 	"encoding/json"
 	"home-booking-api/src/db/queries"
 	"home-booking-api/src/models"
@@ -105,6 +106,10 @@ func GetFamilies(db *sqlx.DB) http.HandlerFunc {
 		err := db.Select(&families, queries.FindFamiliesQuery, houseId)
 
 		if err != nil {
+			if err == sql.ErrNoRows {
+				http.Error(w, "no families found", http.StatusNotFound)
+				return
+			}
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}

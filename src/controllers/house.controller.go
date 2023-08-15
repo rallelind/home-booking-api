@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"database/sql"
 	"encoding/json"
 	"home-booking-api/src/db/queries"
 	"home-booking-api/src/models"
@@ -49,30 +50,14 @@ func GetUserHouses(db *sqlx.DB, clerkClient clerk.Client) http.HandlerFunc {
 
 		var allHouses []models.HouseModel
 
-		rows, err := db.Queryx(queries.FindUserHousesQuery, user.EmailAddresses[0].EmailAddress)
-
-		for rows.Next() {
-			var housePayload models.HouseModel
-			err := rows.StructScan(&housePayload)
-			if err != nil {
-				log.Print(err.Error())
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
-
-			allHouses = append(allHouses, housePayload)
-		}
-
-		defer rows.Close()
+		err := db.Select(&allHouses, queries.FindUserHousesQuery, user.EmailAddresses[0].EmailAddress)
 
 		if err != nil {
-			log.Print(err.Error())
+			if err == sql.ErrNoRows {
+				http.Error(w, "No houses were found", http.StatusNotFound)
+				return
+			}
 			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		if len(allHouses) == 0 {
-			http.Error(w, "No houses were found", http.StatusNotFound)
 			return
 		}
 
@@ -178,6 +163,11 @@ func UploadHouseImages(db *sqlx.DB) http.HandlerFunc {
 		}
 
 		_, err = db.Exec(queries.AddHouseImages, resp.SecureURL, houseId)
+
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 
 		json.NewEncoder(w).Encode(resp)
 	}
