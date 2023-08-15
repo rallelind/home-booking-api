@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"log"
 	"net/http"
 	"os"
 
@@ -19,6 +20,8 @@ func UploadImageToCloudinary(r *http.Request) (*uploader.UploadResult, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	log.Print(file)
 
 	cld, err := cloudinary.NewFromURL(cloudinaryString)
 

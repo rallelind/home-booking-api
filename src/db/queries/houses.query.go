@@ -19,7 +19,6 @@ const FindUserHousesQuery = `
 	WHERE $1 = ANY(f.members)
 `
 
-
 const UserHouseAdminQuery = `
 	SELECT * FROM houses WHERE $1 = ANY(house_admins)
 `
@@ -42,5 +41,5 @@ const RemoveHouseQuery = `
 `
 
 const AddHouseImages = `
-	UPDATE houses SET login_images = $1 WHERE id = $2
+	UPDATE houses SET login_images = array_append(login_images, $1) WHERE id = $2
 `
