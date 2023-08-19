@@ -66,7 +66,7 @@ func GetUserHouses(db *sqlx.DB, clerkClient clerk.Client) http.HandlerFunc {
 	}
 }
 
-func UpdateHouse(db *sqlx.DB) http.HandlerFunc {
+func UpdateAdminNeedsToApprove(db *sqlx.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 		var updateHousePayload models.HouseModel
@@ -85,7 +85,7 @@ func UpdateHouse(db *sqlx.DB) http.HandlerFunc {
 			return
 		}
 
-		_, err = db.Exec(queries.UpdateHouseQuery, updateHousePayload.HouseName, updateHousePayload.AdminNeedsToApprove, updateHousePayload.LoginImages, id)
+		_, err = db.Exec(queries.ChangeAdminNeedsToApprove, updateHousePayload.AdminNeedsToApprove, id)
 
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
@@ -170,5 +170,92 @@ func UploadHouseImages(db *sqlx.DB) http.HandlerFunc {
 		}
 
 		json.NewEncoder(w).Encode(resp)
+	}
+}
+
+func UpdateAdminUsers(db *sqlx.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var houseId, ok = mux.Vars(r)["houseId"]
+
+		if !ok {
+			http.Error(w, "missing path param houseId", http.StatusBadRequest)
+			return
+		}
+
+		var updateHousePayload models.HouseModel
+
+		err := json.NewDecoder(r.Body).Decode(&updateHousePayload)
+
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		_, err = db.Exec(queries.AddHouseAdmin, updateHousePayload.HouseAdmins, houseId)
+
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		json.NewEncoder(w).Encode("updated")
+	}
+}
+
+func RemoveAdminUser(db *sqlx.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var houseId, ok = mux.Vars(r)["houseId"]
+
+		if !ok {
+			http.Error(w, "missing path param houseId", http.StatusBadRequest)
+			return
+		}
+
+		var updateHousePayload models.HouseModel
+
+		err := json.NewDecoder(r.Body).Decode(&updateHousePayload)
+
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		_, err = db.Exec(queries.RemoveHouseAdmin, updateHousePayload.HouseAdmins, houseId)
+
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		json.NewEncoder(w).Encode("updated")
+	}
+}
+
+func RemoveHouseImage(db *sqlx.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var houseId, ok = mux.Vars(r)["houseId"]
+
+		if !ok {
+			http.Error(w, "missing path param houseId", http.StatusBadRequest)
+			return
+		}
+
+		var updateHousePayload models.HouseModel
+
+		err := json.NewDecoder(r.Body).Decode(&updateHousePayload)
+
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		_, err = db.Exec(queries.RemoveHouseImage, updateHousePayload.LoginImages, houseId)
+
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		json.NewEncoder(w).Encode("updated")
 	}
 }
