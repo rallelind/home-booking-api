@@ -7,6 +7,7 @@ import (
 	"home-booking-api/src/models"
 	"net/http"
 
+	"github.com/clerkinc/clerk-sdk-go/clerk"
 	"github.com/gorilla/mux"
 	"github.com/jmoiron/sqlx"
 )
@@ -139,5 +140,33 @@ func RemoveFamily(db *sqlx.DB) http.HandlerFunc {
 
 		json.NewEncoder(w).Encode("successfully deleted")
 
+	}
+}
+
+func FindFamilyForUser(db *sqlx.DB, clerkClient clerk.Client) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		houseId, ok := vars["houseId"]
+
+		ctx := r.Context()
+
+		if !ok {
+			http.Error(w, "missing house id", http.StatusBadRequest)
+			return
+		}
+
+		sessionClaims, _ := ctx.Value(clerk.ActiveSessionClaims).(*clerk.SessionClaims)
+		user, _ := clerkClient.Users().Read(sessionClaims.Claims.Subject)
+
+		var family models.FamilyModel
+
+		err := db.QueryRowx(queries.FindUserFamilyQuery, user.EmailAddresses[0].EmailAddress, houseId).StructScan(&family)
+
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		json.NewEncoder(w).Encode(family)
 	}
 }

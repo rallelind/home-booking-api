@@ -15,6 +15,10 @@ const FindFamilyQuery = `
 	SELECT * FROM families WHERE id = $1
 `
 
+const FindUserFamilyQuery = `
+	SELECT * FROM families WHERE $1 = ANY(members) AND house_id = $2 
+`
+
 const DeleteFamilyQuery = `
 	DELETE FROM families WHERE id = $1
 `
