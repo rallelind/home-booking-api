@@ -12,6 +12,11 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
+type FamilyResponse struct {
+	Users  []clerk.User       `json:"users"`
+	Family models.FamilyModel `json:"family"`
+}
+
 func CreateFamily(db *sqlx.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
@@ -91,7 +96,7 @@ func GetFamily(db *sqlx.DB) http.HandlerFunc {
 	}
 }
 
-func GetFamilies(db *sqlx.DB) http.HandlerFunc {
+func GetFamilies(db *sqlx.DB, clerkClient clerk.Client) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 
@@ -115,7 +120,24 @@ func GetFamilies(db *sqlx.DB) http.HandlerFunc {
 			return
 		}
 
-		json.NewEncoder(w).Encode(families)
+		var familyResponse []FamilyResponse
+
+		for i := 0; i < len(families); i++ {
+			var family = families[i]
+			users, err := clerkClient.Users().ListAll(clerk.ListAllUsersParams{EmailAddresses: family.Members})
+
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			familyResponse = append(familyResponse, FamilyResponse{
+				Users:  users,
+				Family: family,
+			})
+		}
+
+		json.NewEncoder(w).Encode(familyResponse)
 	}
 }
 
@@ -167,6 +189,18 @@ func FindFamilyForUser(db *sqlx.DB, clerkClient clerk.Client) http.HandlerFunc {
 			return
 		}
 
-		json.NewEncoder(w).Encode(family)
+		users, err := clerkClient.Users().ListAll(clerk.ListAllUsersParams{EmailAddresses: family.Members})
+
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		familyResponse := FamilyResponse{
+			Users:  users,
+			Family: family,
+		}
+
+		json.NewEncoder(w).Encode(familyResponse)
 	}
 }
