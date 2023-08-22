@@ -26,3 +26,7 @@ const DeleteFamilyQuery = `
 const FindFamiliesQuery = `
 	SELECT * FROM families WHERE house_id = $1
 `
+
+const UpdateFamilyCoverImageQuery = `
+	UPDATE families SET cover_image = $1 WHERE id = $2
+`

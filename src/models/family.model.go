@@ -7,4 +7,5 @@ type FamilyModel struct {
 	FamilyName string         `db:"family_name" json:"family_name"`
 	Members    pq.StringArray `db:"members" json:"members"`
 	HouseId    int            `db:"house_id" json:"house_id"`
+	CoverImage string         `db:"cover_image" json:"cover_image"`
 }

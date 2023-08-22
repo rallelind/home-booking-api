@@ -61,7 +61,37 @@ func UpdateFamily(db *sqlx.DB) http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
+
 		_, err = db.Exec(queries.UpdateFamilyQuery, updateFamilyPayload.FamilyName, updateFamilyPayload.Members, familyId)
+
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		json.NewEncoder(w).Encode("updated")
+	}
+}
+
+func UpdateCoverImage(db *sqlx.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var updateCoverImagePayload models.FamilyModel
+
+		familyId, ok := mux.Vars(r)["familyId"]
+
+		if !ok {
+			http.Error(w, "please provide a family id", http.StatusBadRequest)
+			return
+		}
+
+		err := json.NewDecoder(r.Body).Decode(&updateCoverImagePayload)
+
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		_, err = db.Exec(queries.UpdateFamilyCoverImageQuery, updateCoverImagePayload.CoverImage, familyId)
 
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -135,6 +165,7 @@ func GetFamilies(db *sqlx.DB, clerkClient clerk.Client) http.HandlerFunc {
 				Users:  users,
 				Family: family,
 			})
+
 		}
 
 		json.NewEncoder(w).Encode(familyResponse)
