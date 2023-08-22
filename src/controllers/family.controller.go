@@ -73,7 +73,7 @@ func UpdateFamily(db *sqlx.DB) http.HandlerFunc {
 	}
 }
 
-func UpdateCoverImage(db *sqlx.DB) http.HandlerFunc {
+func UpdateFamilyCoverImage(db *sqlx.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var updateCoverImagePayload models.FamilyModel
 
