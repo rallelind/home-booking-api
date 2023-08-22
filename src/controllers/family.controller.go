@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"home-booking-api/src/db/queries"
 	"home-booking-api/src/models"
+	"home-booking-api/src/services"
 	"net/http"
 
 	"github.com/clerkinc/clerk-sdk-go/clerk"
@@ -75,7 +76,6 @@ func UpdateFamily(db *sqlx.DB) http.HandlerFunc {
 
 func UpdateFamilyCoverImage(db *sqlx.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var updateCoverImagePayload models.FamilyModel
 
 		familyId, ok := mux.Vars(r)["familyId"]
 
@@ -84,14 +84,14 @@ func UpdateFamilyCoverImage(db *sqlx.DB) http.HandlerFunc {
 			return
 		}
 
-		err := json.NewDecoder(r.Body).Decode(&updateCoverImagePayload)
+		resp, err := services.UploadImageToCloudinary(r)
 
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 
-		_, err = db.Exec(queries.UpdateFamilyCoverImageQuery, updateCoverImagePayload.CoverImage, familyId)
+		_, err = db.Exec(queries.UpdateFamilyCoverImageQuery, resp.SecureURL, familyId)
 
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
