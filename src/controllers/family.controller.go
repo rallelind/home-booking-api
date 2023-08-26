@@ -31,6 +31,20 @@ func CreateFamily(db *sqlx.DB) http.HandlerFunc {
 			return
 		}
 
+		var userCount int
+
+		err = db.QueryRow(queries.UserAlreadyPartOfFamilyQuery, createFamilyPayload.Members, createFamilyPayload.HouseId).Scan(&userCount)
+
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		if userCount > 0 {
+			http.Error(w, "user already part of family", http.StatusBadRequest)
+			return
+		}
+
 		_, err = db.NamedExec(queries.CreateFamilyQuery, createFamilyPayload)
 
 		if err != nil {

@@ -32,5 +32,10 @@ const UpdateFamilyCoverImageQuery = `
 `
 
 const UserAlreadyPartOfFamilyQuery = `
-	SELECT COUNT(*) FROM families WHERE $1::TEXT[] AND house_id = $2
+	SELECT COUNT(*) FROM families            
+	WHERE EXISTS (
+		SELECT 1 FROM unnest(members) AS m
+		WHERE m = ANY($1::TEXT[])
+		AND house_id = $2
+	);
 `
