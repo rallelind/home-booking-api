@@ -30,3 +30,7 @@ const FindFamiliesQuery = `
 const UpdateFamilyCoverImageQuery = `
 	UPDATE families SET cover_image = $1 WHERE id = $2
 `
+
+const UserAlreadyPartOfFamilyQuery = `
+	SELECT COUNT(*) FROM families WHERE $1::TEXT[] AND house_id = $2
+`
