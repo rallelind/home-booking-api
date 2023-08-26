@@ -21,21 +21,15 @@ func CreateCustomer(email string) (*stripe.Customer, error) {
 	return customer, err
 }
 
-func CreateCheckoutSession(email string, redirectUrl string) (*stripe.CheckoutSession, error) {
+func CreateCheckoutSession(stripeCustomerId string, redirectUrl string) (*stripe.CheckoutSession, error) {
 	stripe.Key = os.Getenv("STRIPE_SECRET_KEY")
-
-	customer, err := CreateCustomer(email)
-
-	if err != nil {
-		return nil, err
-	}
 
 	params := &stripe.CheckoutSessionParams{
 		PaymentMethodTypes: stripe.StringSlice([]string{
 			"card",
 		}),
 		Mode:       stripe.String(string(stripe.CheckoutSessionModeSetup)),
-		Customer:   stripe.String(customer.ID),
+		Customer:   stripe.String(stripeCustomerId),
 		SuccessURL: stripe.String(fmt.Sprintf("%s?session_id={CHECKOUT_SESSION_ID}", redirectUrl)),
 		CancelURL:  stripe.String(redirectUrl),
 	}
