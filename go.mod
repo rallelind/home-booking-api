@@ -26,6 +26,7 @@ require (
 	github.com/jmoiron/sqlx v1.3.5 // indirect
 	github.com/lib/pq v1.10.9 // indirect
 	github.com/lpernett/godotenv v0.0.0-20230527005122-0de1d4c5ef5e // indirect
+	github.com/stripe/stripe-go/v75 v75.2.0 // indirect
 	go.opencensus.io v0.24.0 // indirect
 	golang.org/x/crypto v0.9.0 // indirect
 	golang.org/x/net v0.10.0 // indirect
