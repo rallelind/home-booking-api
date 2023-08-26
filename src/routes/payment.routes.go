@@ -1,0 +1,13 @@
+package routes
+
+import (
+	"home-booking-api/src/controllers"
+
+	"github.com/clerkinc/clerk-sdk-go/clerk"
+	"github.com/gorilla/mux"
+	"github.com/jmoiron/sqlx"
+)
+
+func RegisterPaymentRoutes(r *mux.Router, db *sqlx.DB, clerkClient clerk.Client) {
+	r.Handle("/payment/card/session", controllers.CreatePaymentCardSession(clerkClient)).Methods("POST")
+}

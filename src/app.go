@@ -47,6 +47,7 @@ func App() {
 	routes.RegisterBookingsRoutes(mux, db, clerkClient)
 	routes.RegisterHouseRoutes(mux, db, clerkClient)
 	routes.RegisterFamilyRoutes(mux, db, clerkClient)
+	routes.RegisterPaymentRoutes(mux, db, clerkClient)
 
 	log.Fatal(http.ListenAndServe(":8080", 
 		handlers.CORS(handlers.AllowedHeaders([]string{"Content-Type", "Authorization"}), 
