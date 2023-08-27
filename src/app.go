@@ -42,7 +42,7 @@ func App() {
 	defer db.Close()
 
 	mux := mux.NewRouter()
-	
+
 	mux.Use(injectActiveSession)
 
 	routes.RegisterPaymentRoutes(mux, db, clerkClient)	
@@ -52,7 +52,7 @@ func App() {
 
 	log.Fatal(http.ListenAndServe(":8080", 
 		handlers.CORS(handlers.AllowedHeaders([]string{"Content-Type", "Authorization"}), 
-		handlers.AllowedMethods([]string{"GET", "POST", "PUT", "HEAD", "OPTIONS"}), 
+		handlers.AllowedMethods([]string{"GET", "POST", "PUT", "DELETE", "HEAD", "OPTIONS"}), 
 		handlers.AllowedOrigins([]string{"*"}))(mux)),
 	)
 

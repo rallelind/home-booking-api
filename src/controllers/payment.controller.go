@@ -10,6 +10,7 @@ import (
 	"os"
 
 	"github.com/clerkinc/clerk-sdk-go/clerk"
+	"github.com/gorilla/mux"
 	"github.com/stripe/stripe-go/v75"
 	"github.com/stripe/stripe-go/v75/customer"
 	"github.com/stripe/stripe-go/v75/setupintent"
@@ -132,14 +133,10 @@ func SetPrimaryPaymentMethod(clerkClient clerk.Client) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		user := services.GetCurrentUser(clerkClient, r)
 
-		var payload struct {
-			PaymentMethodId string `json:"paymentMethodId"`
-		}
+		paymentMethodId, ok := mux.Vars(r)["paymentMethodId"]
 
-		err := json.NewDecoder(r.Body).Decode(&payload)
-
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+		if !ok {
+			http.Error(w, "please provide a family id", http.StatusBadRequest)
 			return
 		}
 
@@ -150,7 +147,7 @@ func SetPrimaryPaymentMethod(clerkClient clerk.Client) http.HandlerFunc {
 			return
 		}
 
-		services.SetPrimaryPaymentMethod(customerId, payload.PaymentMethodId)
+		services.SetPrimaryPaymentMethod(customerId, paymentMethodId)
 
 		w.WriteHeader(http.StatusOK)
 		json.NewEncoder(w).Encode("successfully updated")
@@ -159,20 +156,16 @@ func SetPrimaryPaymentMethod(clerkClient clerk.Client) http.HandlerFunc {
 
 func DeletePaymentMethod(clerkClient clerk.Client) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var payload struct {
-			PaymentMethodId string `json:"paymentMethodId"`
-		}
+		paymentMethodId, ok := mux.Vars(r)["paymentMethodId"]
 
-		err := json.NewDecoder(r.Body).Decode(&payload)
-
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+		if !ok {
+			http.Error(w, "please provide a family id", http.StatusBadRequest)
 			return
 		}
 
-		services.DeletePaymentMethod(payload.PaymentMethodId)
+		services.DeletePaymentMethod(paymentMethodId)
 
 		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode("successfully deleted")
+		json.NewEncoder(w).Encode("successfully updated")
 	}
 }
