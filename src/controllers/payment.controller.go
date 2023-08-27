@@ -109,3 +109,21 @@ func WebhookHandler() http.HandlerFunc {
 	}
 
 }
+
+func GetUserPaymentMethods(clerkClient clerk.Client) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		user := services.GetCurrentUser(clerkClient, r)
+
+		customerId, ok := user.PrivateMetadata.(map[string]interface{})["stripe_customer_id"].(string)
+
+		if !ok {
+			http.Error(w, "no payment methods found", http.StatusNotFound)
+			return
+		}
+
+		paymentMethods := services.GetPaymentMethods(customerId)
+
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(paymentMethods)
+	}
+}

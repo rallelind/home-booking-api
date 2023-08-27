@@ -7,6 +7,7 @@ import (
 	"github.com/stripe/stripe-go/v75"
 	"github.com/stripe/stripe-go/v75/checkout/session"
 	"github.com/stripe/stripe-go/v75/customer"
+	"github.com/stripe/stripe-go/v75/paymentmethod"
 )
 
 func CreateCustomer(email string) (*stripe.Customer, error) {
@@ -37,4 +38,25 @@ func CreateCheckoutSession(stripeCustomerId string, redirectUrl string) (*stripe
 	session, err := session.New(params)
 
 	return session, err
+}
+
+func GetPaymentMethods(stripeCustomerId string) *[]stripe.PaymentMethod {
+	stripe.Key = os.Getenv("STRIPE_SECRET_KEY")
+
+	params := &stripe.PaymentMethodListParams{
+		Customer: stripe.String(stripeCustomerId),
+		Type:     stripe.String("card"),
+	}
+
+	params.AddExpand("data.customer.invoice_settings")
+
+	var paymentMethods []stripe.PaymentMethod
+
+	i := paymentmethod.List(params)
+	for i.Next() {
+		pm := i.PaymentMethod()
+		paymentMethods = append(paymentMethods, *pm)
+	}
+
+	return &paymentMethods
 }
