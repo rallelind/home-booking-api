@@ -127,3 +127,52 @@ func GetUserPaymentMethods(clerkClient clerk.Client) http.HandlerFunc {
 		json.NewEncoder(w).Encode(paymentMethods)
 	}
 }
+
+func SetPrimaryPaymentMethod(clerkClient clerk.Client) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		user := services.GetCurrentUser(clerkClient, r)
+
+		var payload struct {
+			PaymentMethodId string `json:"paymentMethodId"`
+		}
+
+		err := json.NewDecoder(r.Body).Decode(&payload)
+
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		customerId, ok := user.PrivateMetadata.(map[string]interface{})["stripe_customer_id"].(string)
+
+		if !ok {
+			http.Error(w, "no payment methods found", http.StatusNotFound)
+			return
+		}
+
+		services.SetPrimaryPaymentMethod(customerId, payload.PaymentMethodId)
+
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode("successfully updated")
+	}
+}
+
+func DeletePaymentMethod(clerkClient clerk.Client) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var payload struct {
+			PaymentMethodId string `json:"paymentMethodId"`
+		}
+
+		err := json.NewDecoder(r.Body).Decode(&payload)
+
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		services.DeletePaymentMethod(payload.PaymentMethodId)
+
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode("successfully deleted")
+	}
+}

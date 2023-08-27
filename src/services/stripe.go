@@ -60,3 +60,19 @@ func GetPaymentMethods(stripeCustomerId string) *[]stripe.PaymentMethod {
 
 	return &paymentMethods
 }
+
+func SetPrimaryPaymentMethod(stripeCustomerId string, paymentMethodId string) {
+	stripe.Key = os.Getenv("STRIPE_SECRET_KEY")
+
+	params := &stripe.CustomerParams{}
+
+	params.InvoiceSettings = &stripe.CustomerInvoiceSettingsParams{DefaultPaymentMethod: stripe.String(paymentMethodId)}
+
+	customer.Update(stripeCustomerId, params)
+}
+
+func DeletePaymentMethod(paymentMethodId string) {
+	stripe.Key = os.Getenv("STRIPE_SECRET_KEY")
+
+	paymentmethod.Detach(paymentMethodId, nil)
+}
