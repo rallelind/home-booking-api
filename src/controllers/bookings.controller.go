@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"home-booking-api/src/db/queries"
 	"home-booking-api/src/models"
+	"home-booking-api/src/services"
 	"net/http"
 	"time"
 
@@ -233,5 +234,34 @@ func GetTodayBooking(db *sqlx.DB, clerkClient clerk.Client) http.HandlerFunc {
 		booking.User = *user
 
 		json.NewEncoder(w).Encode(booking)
+	}
+}
+
+func GetPastBookings(db *sqlx.DB, clerkClient clerk.Client) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		houseId, ok := mux.Vars(r)["houseId"]
+		var todaysDate = time.Now()
+
+		user := services.GetCurrentUser(clerkClient, r)
+
+		if !ok {
+			http.Error(w, "no house id provided", http.StatusBadRequest)
+			return
+		}
+
+		var bookings []models.BookingModel
+
+		err := db.Select(&bookings, queries.GetPastBookings, houseId, todaysDate, user.ID)
+
+		if err != nil {
+			if err == sql.ErrNoRows {
+				json.NewEncoder(w).Encode("no bookings found")
+				return
+			}
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		json.NewEncoder(w).Encode(bookings)
 	}
 }

@@ -39,3 +39,7 @@ const GetBookingsForHouse = `
 const GetBookingForCurrentDate = `
 	SELECT * FROM bookings WHERE house_id = $1 AND start_date <= $2 AND end_date >= $2
 `
+
+const GetPastBookings = `
+	SELECT * FROM bookings WHERE house_id = $1 AND end_date < $2 AND approved = true AND user_booking = $3
+`
