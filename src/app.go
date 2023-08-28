@@ -31,7 +31,7 @@ func App() {
 		log.Fatal("Error initiating clerk client")
 	}
 
-	injectActiveSession := clerk.RequireSessionV2(clerkClient)
+	//injectActiveSession := clerk.RequireSessionV2(clerkClient)
 
 	db, err := sqlx.Connect("postgres", connectionString)
 
@@ -43,7 +43,9 @@ func App() {
 
 	mux := mux.NewRouter()
 
-	mux.Use(injectActiveSession)
+	routes.RegisterElectricityRoutes(mux)
+
+	//mux.Use(injectActiveSession)
 
 	routes.RegisterPaymentRoutes(mux, db, clerkClient)	
 	routes.RegisterBookingsRoutes(mux, db, clerkClient)
