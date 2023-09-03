@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS houses(
 CREATE TABLE IF NOT EXISTS families(
 	id SERIAL PRIMARY KEY,
 	family_name TEXT,
-	members TEXT[]
+	members TEXT[],
 	cover_image TEXT
 )
 	
