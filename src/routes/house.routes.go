@@ -9,11 +9,11 @@ import (
 )
 
 func RegisterHouseRoutes(r *mux.Router, db *sqlx.DB, clerkClient clerk.Client) {
-	r.Handle("/house", controllers.CreateHouse(db)).Methods("POST")
-	r.Handle("/house", controllers.GetUserHouses(db, clerkClient)).Methods("Get")
-	r.Handle("/house/{houseId}", controllers.GetHouse(db)).Methods("GET")
-	r.Handle("/house/{houseId}", controllers.RemoveHouse(db)).Methods("DELETE")
-	r.Handle("/house/{houseId}/images", controllers.UploadHouseImages(db)).Methods("POST")
-	r.Handle("/house/{houseId}/admin/approval", controllers.UpdateAdminNeedsToApprove(db)).Methods("PUT")
-	r.Handle("/house/{houseId}/admin/users", controllers.UpdateAdminUsers(db)).Methods("PUT")
+	r.Handle("/", controllers.GetUserHouses(db, clerkClient)).Methods("Get")
+	r.Handle("/", controllers.CreateHouse(db)).Methods("POST")
+	r.Handle("/{houseId}", controllers.GetHouse(db)).Methods("GET")
+	r.Handle("/{houseId}", controllers.RemoveHouse(db)).Methods("DELETE")
+	r.Handle("/{houseId}/images", controllers.UploadHouseImages(db)).Methods("POST")
+	r.Handle("/{houseId}/admin/approval", controllers.UpdateAdminNeedsToApprove(db)).Methods("PUT")
+	r.Handle("/{houseId}/admin/users", controllers.UpdateAdminUsers(db)).Methods("PUT")
 }

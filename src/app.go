@@ -43,14 +43,19 @@ func App() {
 
 	mux := mux.NewRouter()
 
-	routes.RegisterElectricityRoutes(mux)
+	paymentRoutes := mux.PathPrefix("/payment").Subrouter()
+	bookingRoutes := mux.PathPrefix("/booking").Subrouter()
+	houseRoutes := mux.PathPrefix("/house").Subrouter()
+	familyRoutes := mux.PathPrefix("/family").Subrouter()
+
+	//routes.RegisterElectricityRoutes(mux)
 
 	mux.Use(injectActiveSession)
 
-	routes.RegisterPaymentRoutes(mux, db, clerkClient)	
-	routes.RegisterBookingsRoutes(mux, db, clerkClient)
-	routes.RegisterHouseRoutes(mux, db, clerkClient)
-	routes.RegisterFamilyRoutes(mux, db, clerkClient)
+	routes.RegisterPaymentRoutes(paymentRoutes, db, clerkClient)	
+	routes.RegisterBookingsRoutes(bookingRoutes, db, clerkClient)
+	routes.RegisterHouseRoutes(houseRoutes, db, clerkClient)
+	routes.RegisterFamilyRoutes(familyRoutes, db, clerkClient)
 
 	log.Fatal(http.ListenAndServe(":8000", 
 		handlers.CORS(handlers.AllowedHeaders([]string{"Content-Type", "Authorization"}), 
