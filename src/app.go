@@ -1,6 +1,7 @@
 package app
 
 import (
+	"fmt"
 	"home-booking-api/src/routes"
 	"log"
 	"net/http"
@@ -47,6 +48,8 @@ func App() {
 	bookingRoutes := mux.PathPrefix("/booking").Subrouter()
 	houseRoutes := mux.PathPrefix("/house").Subrouter()
 	familyRoutes := mux.PathPrefix("/family").Subrouter()
+
+	fmt.Println(mux)
 
 	//routes.RegisterElectricityRoutes(mux)
 
