@@ -4,6 +4,7 @@ const FindBookingForSpecificDateQuery = `
 	SELECT COUNT(*) FROM bookings
 	WHERE (start_date, end_date) OVERLAPS ($1, $2) 
 	AND approved = true
+	AND house_id = $3
 `
 
 const CreateBookingQuery = `

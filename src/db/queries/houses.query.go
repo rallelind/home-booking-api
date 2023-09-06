@@ -24,7 +24,7 @@ const UserHouseAdminQuery = `
 `
 
 const UserPartOfHouseQuery = `
-	SELECT * FROM houses h INNER JOIN families f ON h.id = f.house_id WHERE $1 = ANY(f.members) AND $2 = f.house_id
+	SELECT h.id, f.house_id, f.members FROM houses h INNER JOIN families f ON h.id = f.house_id WHERE $1 = ANY(f.members) AND $2 = f.house_id
 `
 
 const FindHouseQuery = `

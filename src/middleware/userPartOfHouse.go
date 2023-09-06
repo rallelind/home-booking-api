@@ -27,9 +27,9 @@ func UserPartOfHouse(db *sqlx.DB, clerkClient clerk.Client) func(http.Handler) h
 			sessionClaims, _ := ctx.Value(clerk.ActiveSessionClaims).(*clerk.SessionClaims)
 			user, _ := clerkClient.Users().Read(sessionClaims.Claims.Subject)
 
-			var house models.HouseModel
+			var family models.FamilyModel
 
-			err := db.QueryRowx(queries.UserPartOfHouseQuery, user.EmailAddresses[0].EmailAddress, id).StructScan(&house)
+			err := db.QueryRowx(queries.UserPartOfHouseQuery, user.EmailAddresses[0].EmailAddress, id).StructScan(&family)
 
 			if err != nil {
 				if err == sql.ErrNoRows {

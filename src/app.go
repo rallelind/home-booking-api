@@ -48,6 +48,7 @@ func App() {
 	bookingRoutes := mux.PathPrefix("/booking").Subrouter()
 	houseRoutes := mux.PathPrefix("/house").Subrouter()
 	familyRoutes := mux.PathPrefix("/family").Subrouter()
+	userRoutes := mux.PathPrefix("/user").Subrouter()
 
 	fmt.Println(mux)
 
@@ -55,15 +56,16 @@ func App() {
 
 	mux.Use(injectActiveSession)
 
-	routes.RegisterPaymentRoutes(paymentRoutes, db, clerkClient)	
+	routes.RegisterPaymentRoutes(paymentRoutes, db, clerkClient)
 	routes.RegisterBookingsRoutes(bookingRoutes, db, clerkClient)
 	routes.RegisterHouseRoutes(houseRoutes, db, clerkClient)
 	routes.RegisterFamilyRoutes(familyRoutes, db, clerkClient)
+	routes.RegisterUserRoutes(userRoutes, db, clerkClient)
 
-	log.Fatal(http.ListenAndServe(":8000", 
-		handlers.CORS(handlers.AllowedHeaders([]string{"Content-Type", "Authorization"}), 
-		handlers.AllowedMethods([]string{"GET", "POST", "PUT", "DELETE", "HEAD", "OPTIONS"}), 
-		handlers.AllowedOrigins([]string{"*"}))(mux)),
+	log.Fatal(http.ListenAndServe(":8000",
+		handlers.CORS(handlers.AllowedHeaders([]string{"Content-Type", "Authorization"}),
+			handlers.AllowedMethods([]string{"GET", "POST", "PUT", "DELETE", "HEAD", "OPTIONS"}),
+			handlers.AllowedOrigins([]string{"*"}))(mux)),
 	)
 
 }

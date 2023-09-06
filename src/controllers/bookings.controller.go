@@ -42,7 +42,7 @@ func CreateBooking(db *sqlx.DB, clerkClient clerk.Client) http.HandlerFunc {
 
 		var count int
 
-		err = db.QueryRow(queries.FindBookingForSpecificDateQuery, &createBookingPayload.StartDate, &createBookingPayload.EndDate).Scan(&count)
+		err = db.QueryRow(queries.FindBookingForSpecificDateQuery, &createBookingPayload.StartDate, &createBookingPayload.EndDate, &createBookingPayload.HouseId).Scan(&count)
 
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
