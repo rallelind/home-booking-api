@@ -140,7 +140,7 @@ func GetFamily(db *sqlx.DB) http.HandlerFunc {
 	}
 }
 
-func GetFamilies(db *sqlx.DB, clerkClient clerk.Client) http.HandlerFunc {
+func GetFamilies(db *sqlx.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 
@@ -168,7 +168,7 @@ func GetFamilies(db *sqlx.DB, clerkClient clerk.Client) http.HandlerFunc {
 
 		for i := 0; i < len(families); i++ {
 			var family = families[i]
-			users, err := clerkClient.Users().ListAll(clerk.ListAllUsersParams{EmailAddresses: family.Members})
+			users, err := services.GetUsersByEmails(family.Members)
 
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -210,20 +210,17 @@ func RemoveFamily(db *sqlx.DB) http.HandlerFunc {
 	}
 }
 
-func FindFamilyForUser(db *sqlx.DB, clerkClient clerk.Client) http.HandlerFunc {
+func FindFamilyForUser(db *sqlx.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		houseId, ok := vars["houseId"]
-
-		ctx := r.Context()
 
 		if !ok {
 			http.Error(w, "missing house id", http.StatusBadRequest)
 			return
 		}
 
-		sessionClaims, _ := ctx.Value(clerk.ActiveSessionClaims).(*clerk.SessionClaims)
-		user, _ := clerkClient.Users().Read(sessionClaims.Claims.Subject)
+		user := services.GetCurrentUser(r)
 
 		var family models.FamilyModel
 
@@ -234,7 +231,7 @@ func FindFamilyForUser(db *sqlx.DB, clerkClient clerk.Client) http.HandlerFunc {
 			return
 		}
 
-		users, err := clerkClient.Users().ListAll(clerk.ListAllUsersParams{EmailAddresses: family.Members})
+		users, err := services.GetUsersByEmails(family.Members)
 
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)

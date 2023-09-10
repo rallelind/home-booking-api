@@ -23,6 +23,8 @@ CREATE TABLE IF NOT EXISTS bookings(
 	end_date DATE,
 	approved BOOLEAN,
 	user_booking TEXT
+	electricity_used INT
+	water_used INT
 )
 	
 

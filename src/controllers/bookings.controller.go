@@ -14,15 +14,12 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-func CreateBooking(db *sqlx.DB, clerkClient clerk.Client) http.HandlerFunc {
+func CreateBooking(db *sqlx.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 		w.Header().Set("Content-Type", "application/json")
 
-		ctx := r.Context()
-
-		sessionClaims, _ := ctx.Value(clerk.ActiveSessionClaims).(*clerk.SessionClaims)
-		user, _ := clerkClient.Users().Read(sessionClaims.Claims.Subject)
+		user := services.GetCurrentUser(r)
 
 		var createBookingPayload models.BookingModel
 
@@ -64,7 +61,6 @@ func CreateBooking(db *sqlx.DB, clerkClient clerk.Client) http.HandlerFunc {
 		json.NewEncoder(w).Encode("successfully created")
 	}
 }
-
 func RemoveBooking(db *sqlx.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		bookingId, ok := mux.Vars(r)["bookingId"]
@@ -90,7 +86,7 @@ type Booking struct {
 	Booking models.BookingModel `json:"booking"`
 }
 
-func GetHouseBookings(db *sqlx.DB, clerkClient clerk.Client) http.HandlerFunc {
+func GetHouseBookings(db *sqlx.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		houseId, ok := mux.Vars(r)["houseId"]
 
@@ -125,7 +121,7 @@ func GetHouseBookings(db *sqlx.DB, clerkClient clerk.Client) http.HandlerFunc {
 			}
 
 			if bookingPayload.Booking.UserBooking != cachedUser.ID {
-				user, err := clerkClient.Users().Read(bookingPayload.Booking.UserBooking)
+				user, err := services.GetUser(bookingPayload.Booking.UserBooking)
 
 				if err != nil {
 					http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -200,7 +196,7 @@ func ApproveBooking(db *sqlx.DB) http.HandlerFunc {
 	}
 }
 
-func GetTodayBooking(db *sqlx.DB, clerkClient clerk.Client) http.HandlerFunc {
+func GetTodayBooking(db *sqlx.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 		houseId, ok := mux.Vars(r)["houseId"]
@@ -224,7 +220,7 @@ func GetTodayBooking(db *sqlx.DB, clerkClient clerk.Client) http.HandlerFunc {
 			return
 		}
 
-		user, err := clerkClient.Users().Read(booking.Booking.UserBooking)
+		user, err := services.GetUser(booking.Booking.UserBooking)
 
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -237,12 +233,12 @@ func GetTodayBooking(db *sqlx.DB, clerkClient clerk.Client) http.HandlerFunc {
 	}
 }
 
-func GetPastBookings(db *sqlx.DB, clerkClient clerk.Client) http.HandlerFunc {
+func GetPastBookings(db *sqlx.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		houseId, ok := mux.Vars(r)["houseId"]
 		var todaysDate = time.Now()
 
-		user := services.GetCurrentUser(clerkClient, r)
+		user := services.GetCurrentUser(r)
 
 		if !ok {
 			http.Error(w, "no house id provided", http.StatusBadRequest)
@@ -265,3 +261,5 @@ func GetPastBookings(db *sqlx.DB, clerkClient clerk.Client) http.HandlerFunc {
 		json.NewEncoder(w).Encode(bookings)
 	}
 }
+
+func UpdateBookingElectricityUsed(db *sqlx.DB) {}

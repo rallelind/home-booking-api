@@ -9,17 +9,16 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/clerkinc/clerk-sdk-go/clerk"
 	"github.com/gorilla/mux"
 	"github.com/stripe/stripe-go/v75"
 	"github.com/stripe/stripe-go/v75/customer"
 	"github.com/stripe/stripe-go/v75/setupintent"
 )
 
-func CreatePaymentCardSession(clerkClient clerk.Client) http.HandlerFunc {
+func CreatePaymentCardSession() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
-		user := services.GetCurrentUser(clerkClient, r)
+		user := services.GetCurrentUser(r)
 
 		var payload struct {
 			RedirectUrl string `json:"redirectUrl"`
@@ -42,7 +41,7 @@ func CreatePaymentCardSession(clerkClient clerk.Client) http.HandlerFunc {
 				return
 			}
 
-			clerkClient.Users().Update(user.ID, &clerk.UpdateUser{PrivateMetadata: map[string]interface{}{"stripe_customer_id": customer.ID}})
+			services.UpdateUserPayment(user.ID, customer.ID)
 			customerId = customer.ID
 		}
 
@@ -111,9 +110,9 @@ func WebhookHandler() http.HandlerFunc {
 
 }
 
-func GetUserPaymentMethods(clerkClient clerk.Client) http.HandlerFunc {
+func GetUserPaymentMethods() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		user := services.GetCurrentUser(clerkClient, r)
+		user := services.GetCurrentUser(r)
 
 		customerId, ok := user.PrivateMetadata.(map[string]interface{})["stripe_customer_id"].(string)
 
@@ -129,9 +128,9 @@ func GetUserPaymentMethods(clerkClient clerk.Client) http.HandlerFunc {
 	}
 }
 
-func SetPrimaryPaymentMethod(clerkClient clerk.Client) http.HandlerFunc {
+func SetPrimaryPaymentMethod() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		user := services.GetCurrentUser(clerkClient, r)
+		user := services.GetCurrentUser(r)
 
 		paymentMethodId, ok := mux.Vars(r)["paymentMethodId"]
 
@@ -154,7 +153,7 @@ func SetPrimaryPaymentMethod(clerkClient clerk.Client) http.HandlerFunc {
 	}
 }
 
-func DeletePaymentMethod(clerkClient clerk.Client) http.HandlerFunc {
+func DeletePaymentMethod() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		paymentMethodId, ok := mux.Vars(r)["paymentMethodId"]
 

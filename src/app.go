@@ -1,13 +1,12 @@
 package app
 
 import (
-	"fmt"
 	"home-booking-api/src/routes"
+	"home-booking-api/src/services"
 	"log"
 	"net/http"
 	"os"
 
-	"github.com/clerkinc/clerk-sdk-go/clerk"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/jmoiron/sqlx"
@@ -24,15 +23,6 @@ func App() {
 	}
 
 	connectionString := os.Getenv("POSTGRES_CONNECTION_STRING")
-	clerkSecret := os.Getenv("CLERK_SECRET_KEY")
-
-	clerkClient, err := clerk.NewClient(clerkSecret)
-
-	if err != nil {
-		log.Fatal("Error initiating clerk client")
-	}
-
-	injectActiveSession := clerk.RequireSessionV2(clerkClient)
 
 	db, err := sqlx.Connect("postgres", connectionString)
 
@@ -50,17 +40,21 @@ func App() {
 	familyRoutes := mux.PathPrefix("/family").Subrouter()
 	userRoutes := mux.PathPrefix("/user").Subrouter()
 
-	fmt.Println(mux)
-
 	//routes.RegisterElectricityRoutes(mux)
+
+	injectActiveSession, err := services.ClerkActiveSession()
+
+	if err != nil {
+		log.Fatal("Error creating clerk client")
+	}
 
 	mux.Use(injectActiveSession)
 
-	routes.RegisterPaymentRoutes(paymentRoutes, db, clerkClient)
-	routes.RegisterBookingsRoutes(bookingRoutes, db, clerkClient)
-	routes.RegisterHouseRoutes(houseRoutes, db, clerkClient)
-	routes.RegisterFamilyRoutes(familyRoutes, db, clerkClient)
-	routes.RegisterUserRoutes(userRoutes, db, clerkClient)
+	routes.RegisterPaymentRoutes(paymentRoutes, db)
+	routes.RegisterBookingsRoutes(bookingRoutes, db)
+	routes.RegisterHouseRoutes(houseRoutes, db)
+	routes.RegisterFamilyRoutes(familyRoutes, db)
+	routes.RegisterUserRoutes(userRoutes, db)
 
 	log.Fatal(http.ListenAndServe(":8000",
 		handlers.CORS(handlers.AllowedHeaders([]string{"Content-Type", "Authorization"}),

@@ -4,19 +4,17 @@ import (
 	"database/sql"
 	"home-booking-api/src/db/queries"
 	"home-booking-api/src/models"
+	"home-booking-api/src/services"
 	"net/http"
 
-	"github.com/clerkinc/clerk-sdk-go/clerk"
 	"github.com/jmoiron/sqlx"
 )
 
-func UserIsHouseAdmin(db *sqlx.DB, clerkClient clerk.Client) func(http.Handler) http.Handler {
+func UserIsHouseAdmin(db *sqlx.DB) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
-			ctx := r.Context()
-			sessionClaims, _ := ctx.Value(clerk.ActiveSessionClaims).(*clerk.SessionClaims)
-			user, _ := clerkClient.Users().Read(sessionClaims.Claims.Subject)
+			user := services.GetCurrentUser(r)
 
 			var house models.HouseModel
 

@@ -9,7 +9,6 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/clerkinc/clerk-sdk-go/clerk"
 	"github.com/gorilla/mux"
 	"github.com/jmoiron/sqlx"
 )
@@ -38,15 +37,11 @@ func CreateHouse(db *sqlx.DB) http.HandlerFunc {
 	}
 }
 
-func GetUserHouses(db *sqlx.DB, clerkClient clerk.Client) http.HandlerFunc {
+func GetUserHouses(db *sqlx.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 
-		ctx := r.Context()
-
-		// ignore the ok and error because a user will be there as of require session middleware will return 403 else
-		sessionClaims, _ := ctx.Value(clerk.ActiveSessionClaims).(*clerk.SessionClaims)
-		user, _ := clerkClient.Users().Read(sessionClaims.Claims.Subject)
+		user := services.GetCurrentUser(r)
 
 		var allHouses []models.HouseModel
 
