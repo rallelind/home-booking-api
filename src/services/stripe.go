@@ -5,6 +5,8 @@ import (
 	"os"
 
 	"github.com/stripe/stripe-go/v75"
+	"github.com/stripe/stripe-go/v75/account"
+	"github.com/stripe/stripe-go/v75/accountlink"
 	"github.com/stripe/stripe-go/v75/checkout/session"
 	"github.com/stripe/stripe-go/v75/customer"
 	"github.com/stripe/stripe-go/v75/paymentmethod"
@@ -75,4 +77,36 @@ func DeletePaymentMethod(paymentMethodId string) {
 	stripe.Key = os.Getenv("STRIPE_SECRET_KEY")
 
 	paymentmethod.Detach(paymentMethodId, nil)
+}
+
+func CreateConnectedAccount(email string) (*stripe.Account, error) {
+	stripe.Key = os.Getenv("STRIPE_SECRET_KEY")
+
+	params := &stripe.AccountParams{Type: stripe.String(string(stripe.AccountTypeStandard)), Email: stripe.String(email)}
+	result, err := account.New(params)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+func CreateConnectedAccountLink(connectedAccountId string) (*stripe.AccountLink, error) {
+	stripe.Key = os.Getenv("STRIPE_SECRET_KEY")
+
+	params := &stripe.AccountLinkParams{
+		Account:    stripe.String(connectedAccountId),
+		RefreshURL: stripe.String("https://example.com/reauth"),
+		ReturnURL:  stripe.String("https://example.com/return"),
+		Type:       stripe.String("account_onboarding"),
+	}
+
+	result, err := accountlink.New(params)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
 }
