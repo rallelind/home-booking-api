@@ -12,6 +12,7 @@ import (
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 	"github.com/lpernett/godotenv"
+	"github.com/stripe/stripe-go/v75"
 )
 
 func App() {
@@ -23,6 +24,7 @@ func App() {
 	}
 
 	connectionString := os.Getenv("POSTGRES_CONNECTION_STRING")
+	stripe.Key = os.Getenv("STRIPE_SECRET_KEY")
 
 	db, err := sqlx.Connect("postgres", connectionString)
 

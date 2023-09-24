@@ -13,7 +13,6 @@ import (
 )
 
 func CreateCustomer(email string) (*stripe.Customer, error) {
-	stripe.Key = os.Getenv("STRIPE_SECRET_KEY")
 
 	params := &stripe.CustomerParams{
 		Email: stripe.String(email),
@@ -25,7 +24,6 @@ func CreateCustomer(email string) (*stripe.Customer, error) {
 }
 
 func CreateCheckoutSession(stripeCustomerId string, redirectUrl string) (*stripe.CheckoutSession, error) {
-	stripe.Key = os.Getenv("STRIPE_SECRET_KEY")
 
 	params := &stripe.CheckoutSessionParams{
 		PaymentMethodTypes: stripe.StringSlice([]string{
@@ -43,7 +41,6 @@ func CreateCheckoutSession(stripeCustomerId string, redirectUrl string) (*stripe
 }
 
 func GetPaymentMethods(stripeCustomerId string) *[]stripe.PaymentMethod {
-	stripe.Key = os.Getenv("STRIPE_SECRET_KEY")
 
 	params := &stripe.PaymentMethodListParams{
 		Customer: stripe.String(stripeCustomerId),
@@ -64,7 +61,6 @@ func GetPaymentMethods(stripeCustomerId string) *[]stripe.PaymentMethod {
 }
 
 func SetPrimaryPaymentMethod(stripeCustomerId string, paymentMethodId string) {
-	stripe.Key = os.Getenv("STRIPE_SECRET_KEY")
 
 	params := &stripe.CustomerParams{}
 
@@ -74,13 +70,11 @@ func SetPrimaryPaymentMethod(stripeCustomerId string, paymentMethodId string) {
 }
 
 func DeletePaymentMethod(paymentMethodId string) {
-	stripe.Key = os.Getenv("STRIPE_SECRET_KEY")
 
 	paymentmethod.Detach(paymentMethodId, nil)
 }
 
 func CreateConnectedAccount(email string) (*stripe.Account, error) {
-	stripe.Key = os.Getenv("STRIPE_SECRET_KEY")
 
 	params := &stripe.AccountParams{Type: stripe.String(string(stripe.AccountTypeStandard)), Email: stripe.String(email)}
 	result, err := account.New(params)
